@@ -317,10 +317,14 @@
   .fe-message { margin: 0; max-width: 46ch; color: #ff9b90; white-space: pre-line; }
 
   /* One screen at a time; `render()` sets data-screen on the root. */
-  .fe-welcome, .fe-load, .fe-start, .fe-pause, .fe-class, .fe-controls, .fe-message { display: none; }
+  .fe-welcome, .fe-load, .fe-start, .fe-pause, .fe-class, .fe-controls, .fe-message,
+  .fe-mode, .fe-lobby, .fe-settings { display: none; }
   #blocker[data-screen="welcome"] .fe-welcome { display: block; }
   #fe-load-game { min-height: 48px; height: auto; line-height: 48px; touch-action: manipulation; }
   #blocker[data-screen="loading"] .fe-load { display: block; }
+  #blocker[data-screen="mode"] .fe-mode { display: block; }
+  #blocker[data-screen="lobby"] .fe-lobby { display: block; }
+  #blocker[data-screen="settings"] .fe-settings { display: block; }
   #blocker[data-screen="title"] .fe-start,
   #blocker[data-screen="pause"] .fe-pause { display: flex; flex-direction: column; align-items: center; gap: 22px; }
   #blocker[data-screen="title"] .fe-controls,
@@ -345,6 +349,68 @@
   }
   #blocker[data-screen="error"] .fe-message { display: block; }
   #blocker[data-screen="error"] .fe-wordmark::after { background: #ff6a5c; }
+
+  /* ---------- mode picker ---------- */
+  .fe-mode { max-width: 640px; }
+  .fe-mode-grid { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin: 26px 0 10px; }
+  .fe-mode-btn { min-width: 240px; min-height: 86px; height: auto; padding: 14px 22px;
+    display: flex; flex-direction: column; gap: 6px; line-height: 1.3; }
+  .fe-mode-btn strong { font-size: 19px; letter-spacing: .12em; }
+  .fe-mode-btn span { font-size: 12px; opacity: .75; letter-spacing: .04em; }
+  .fe-mode-foot { margin-top: 18px; display: flex; gap: 12px; justify-content: center; }
+
+  /* ---------- multiplayer lobby ---------- */
+  .fe-lobby { max-width: 560px; width: 100%; text-align: center; }
+  .fe-lobby .fe-heading { margin-bottom: 4px; }
+  .fe-name-row { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 14px 0; letter-spacing: .08em; }
+  .fe-lobby input { background: #07121ab8; border: 1px solid #7fffc43d; color: #dfe9f2;
+    font: 600 16px/1.2 var(--fe-ui); letter-spacing: .08em; padding: 10px 12px; border-radius: 2px; min-width: 0; }
+  .fe-lobby input:focus { outline: 1px solid #7fffc4; }
+  #fe-player-name { width: 220px; text-transform: uppercase; }
+  #fe-room-code { width: 120px; text-transform: uppercase; text-align: center; font-size: 20px; letter-spacing: .3em; }
+  .fe-join-row { display: flex; gap: 10px; align-items: center; justify-content: center; }
+  .fe-lobby-choice { display: flex; flex-direction: column; gap: 14px; align-items: center; margin: 8px 0 16px; }
+  .fe-room-live { margin: 6px 0 14px; }
+  .fe-room-code { margin: 0 0 12px; letter-spacing: .06em; color: #9fb4c2; }
+  .fe-room-code b { color: var(--fe-accent); font-size: 26px; letter-spacing: .32em; margin-left: 8px; }
+  .fe-roster { list-style: none; margin: 0 auto 12px; padding: 0; max-width: 320px; display: flex; flex-direction: column; gap: 4px; }
+  .fe-roster li { display: flex; justify-content: space-between; gap: 18px; padding: 6px 12px;
+    background: #07121ab8; border-left: 2px solid #7fffc466; font-weight: 600; letter-spacing: .05em; }
+  .fe-roster li small { color: #9fb4c2; font-weight: 500; }
+  .fe-room-status { min-height: 22px; margin: 4px 0 10px; color: #9fb4c2; letter-spacing: .05em; }
+  .fe-room-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .fe-lobby-note { margin: 14px 0 0; color: #9fb4c2; font-size: 12px; letter-spacing: .04em; max-width: 46ch; }
+  .fe-lobby-note b { color: #dfe9f2; }
+
+  /* ---------- settings ---------- */
+  .fe-settings { max-width: 720px; width: 100%; text-align: left; }
+  .fe-settings h2 { text-align: center; }
+  .fe-settings-body { max-height: min(56vh, 520px); overflow-y: auto; overscroll-behavior: contain;
+    scrollbar-width: thin; scrollbar-color: #7fffc480 #07121ab8; padding: 0 6px; }
+  .fe-settings-group { margin: 0 0 14px; background: #07121ab8; border-left: 2px solid #7fffc466; padding: 12px 14px; }
+  .fe-settings-group > h3 { margin: 0 0 10px; font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--fe-accent); font-weight: 700; }
+  .fe-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 0; }
+  .fe-setting-row label { letter-spacing: .05em; }
+  .fe-setting-row input[type="range"] { width: min(240px, 42vw); accent-color: #7fffc4; }
+  .fe-setting-row output { min-width: 52px; text-align: right; font-weight: 700; color: var(--fe-accent); }
+  .fe-setting-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #7fffc4; }
+  .fe-binds { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 4px 22px; }
+  .fe-bind-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; }
+  .fe-bind-row label { letter-spacing: .04em; }
+  .fe-bind-row button { background: #0b1d27; border: 1px solid #7fffc43d; color: #dfe9f2; cursor: pointer;
+    font: 700 12px/1 var(--fe-ui); letter-spacing: .1em; padding: 8px 12px; min-width: 96px; border-radius: 2px; }
+  .fe-bind-row button:hover { border-color: #7fffc4; }
+  .fe-bind-row button.listening { border-color: #ffd479; color: #ffd479; animation: fe-blink .8s steps(2) infinite; }
+  @keyframes fe-blink { 50% { opacity: .35; } }
+  .fe-settings-actions { display: flex; gap: 12px; justify-content: center; margin-top: 6px; }
+  #blocker[data-screen="settings"] .fe-sub { display: none; }
+  #blocker[data-screen="settings"] .fe-wordmark,
+  #blocker[data-screen="lobby"] .fe-wordmark,
+  #blocker[data-screen="mode"] .fe-wordmark { font-size: clamp(20px, 3vw, 30px); }
+  #blocker[data-screen="settings"] .fe-wordmark::after,
+  #blocker[data-screen="lobby"] .fe-wordmark::after,
+  #blocker[data-screen="mode"] .fe-wordmark::after { margin-top: 14px; }
 
   @media (prefers-reduced-motion: reduce) {
     .fe-backdrop, .fe-fog, .fe-prompt { animation: none; }
@@ -581,6 +647,67 @@
     <div class="fe-welcome">
       <button type="button" class="fe-btn" id="fe-load-game">Tap or click to load</button>
     </div>
+    <div class="fe-mode">
+      <h2 class="fe-heading">Choose your operation</h2>
+      <div class="fe-mode-grid">
+        <button type="button" class="fe-btn fe-mode-btn" data-action="mode-single">
+          <strong>SINGLEPLAYER</strong>
+          <span>Free-for-all against bots on your machine</span>
+        </button>
+        <button type="button" class="fe-btn fe-mode-btn" data-action="mode-multi">
+          <strong>MULTIPLAYER</strong>
+          <span>Rooms over direct peer-to-peer links</span>
+        </button>
+      </div>
+      <div class="fe-mode-foot">
+        <button type="button" class="fe-btn" data-action="settings">Settings</button>
+      </div>
+    </div>
+    <section class="fe-lobby" aria-label="Multiplayer room">
+      <h2 class="fe-heading">Multiplayer room</h2>
+      <div class="fe-lobby-inner" id="fe-lobby-inner">
+        <label class="fe-name-row">CALLSIGN <input id="fe-player-name" maxlength="16" autocomplete="off" spellcheck="false" placeholder="OPERATIVE"></label>
+        <div class="fe-lobby-choice" id="fe-lobby-choice">
+          <button type="button" class="fe-btn" id="fe-room-create">Create room</button>
+          <div class="fe-join-row">
+            <input id="fe-room-code" maxlength="5" placeholder="CODE" autocomplete="off" spellcheck="false">
+            <button type="button" class="fe-btn" id="fe-room-join">Join room</button>
+          </div>
+        </div>
+        <div class="fe-room-live" id="fe-room-live" hidden>
+          <p class="fe-room-code">ROOM CODE<b id="fe-room-code-display"></b></p>
+          <ul class="fe-roster" id="fe-roster"></ul>
+          <p class="fe-room-status" id="fe-room-status"></p>
+          <div class="fe-room-actions">
+            <button type="button" class="fe-btn" id="fe-room-deploy" hidden>Deploy everyone</button>
+            <button type="button" class="fe-btn" id="fe-room-copy" hidden>Copy invite link</button>
+            <button type="button" class="fe-btn" id="fe-room-leave">Leave room</button>
+          </div>
+        </div>
+        <button type="button" class="fe-btn" data-action="lobby-back">Back</button>
+        <p class="fe-lobby-note">Everyone in a room plays the same map: <b id="fe-lobby-map"></b>. Share the code and play across browsers — peer-to-peer, no server.</p>
+      </div>
+    </section>
+    <section class="fe-settings" aria-label="Settings">
+      <div class="fe-settings-body">
+        <div class="fe-settings-group">
+          <h3>Mouse &amp; aim</h3>
+          <div class="fe-setting-row"><label for="set-mouse-sens">Look sensitivity</label><input id="set-mouse-sens" type="range" min="0.2" max="3" step="0.1"><output id="set-mouse-sens-value" for="set-mouse-sens"></output></div>
+          <div class="fe-setting-row"><label for="set-ads-sens">Aim down sights sensitivity</label><input id="set-ads-sens" type="range" min="0.2" max="1.5" step="0.05"><output id="set-ads-sens-value" for="set-ads-sens"></output></div>
+          <div class="fe-setting-row"><label for="set-invert-y">Invert vertical look</label><input id="set-invert-y" type="checkbox"></div>
+          <div class="fe-setting-row"><label for="set-fov">Field of view</label><input id="set-fov" type="range" min="60" max="110" step="1"><output id="set-fov-value" for="set-fov"></output></div>
+          <div class="fe-setting-row"><label for="set-touch-sens">Touch sensitivity</label><input id="set-touch-sens" type="range" min="0.4" max="2" step="0.1"><output id="set-touch-sens-value" for="set-touch-sens"></output></div>
+        </div>
+        <div class="fe-settings-group">
+          <h3>Controls</h3>
+          <div class="fe-binds" id="fe-binds"></div>
+        </div>
+      </div>
+      <div class="fe-settings-actions">
+        <button type="button" class="fe-btn" data-action="settings-reset" id="fe-settings-reset">Reset defaults</button>
+        <button type="button" class="fe-btn" data-action="settings-back">Back</button>
+      </div>
+    </section>
     <div class="fe-load">
       <div class="fe-track"><div class="fe-bar" id="fe-bar"></div></div>
       <div class="fe-status"><span id="fe-caption">Preparing game…</span><span id="fe-percent"></span></div>
@@ -598,6 +725,7 @@
       <div class="fe-buttons">
         <button type="button" class="fe-btn" data-action="resume">Resume</button>
         <button type="button" class="fe-btn" data-action="class">Create a class</button>
+        <button type="button" class="fe-btn" data-action="settings" id="fe-pause-settings">Settings</button>
         <button type="button" class="fe-btn" data-action="respawn">Respawn</button>
         <button type="button" class="fe-btn" data-action="navmesh">Navmesh overlay</button>
         <button type="button" class="fe-btn" data-action="collision">Collision overlay</button>
@@ -689,7 +817,7 @@ globalThis.hijackedStartup = new Promise((resolve) => {
   function requestLoad() {
     for (const type of events) removeEventListener(type, requestLoad, true);
     const shell = document.getElementById('blocker');
-    shell.dataset.screen = 'loading';
+    shell.dataset.screen = 'mode';
     shell.dataset.determinate = 'false';
     resolve();
   }
@@ -708,12 +836,13 @@ import { Viewmodel } from './viewmodel.js';
 import { ViewBob } from './view-bob.js';
 import { WeaponController } from './weapon-controller.js';
 import { WeaponEffects } from './weapon-effects.js';
-import { EnemyManager } from './enemy-system.js';
+import { EnemyManager, RemotePuppet } from './enemy-system.js';
+import { NetSession, REJOIN_KEY } from './net-session.js';
 import { PlayerHealth } from './player-health.js';
 import { FreeForAllMatch } from './free-for-all-match.js';
 import { MedalTracker } from './medals.js';
 import { Hud, calibrationFromCorners } from './hud.js';
-import { Frontend } from './frontend.js';
+import { Frontend, BINDABLE_ACTIONS } from './frontend.js';
 import { TouchControls } from './touch-controls.js';
 import { loadGltf as loadGltfAsset } from './load-gltf.js';
 import { GraphicsSettings, filterTextures } from './graphics-settings.js';
@@ -747,11 +876,49 @@ const activeMap = MAPS[resolveMapId({ search: location.search, storage: mapStora
 const activeMapFiles = mapFiles(activeMap);
 rememberMap(mapStorage, activeMap.id);
 
+// The mode the page runs in: chosen on the mode screen before the heavy load
+// (bots only make sense in singleplayer), carried by an invite link
+// (?room=CODE), or defaulted for automation (?autostart).
+let gameMode = 'single';
+const inviteRoom = new URLSearchParams(location.search).get('room');
+if (inviteRoom) gameMode = 'multi';
+
+// ---------- control settings (mouse aim, FOV, keybinds) ----------
+const CONTROLS_KEY = 'vibeslops:controls';
+const CONTROL_DEFAULTS = Object.freeze({ mouseSensitivity: 1, adsSensitivity: 0.8, invertY: false, fov: 75 });
+function loadControls() {
+  let saved = null;
+  try { saved = JSON.parse(mapStorage?.getItem(CONTROLS_KEY) ?? 'null'); } catch { /* a corrupt row falls back to defaults */ }
+  const binds = {};
+  for (const action of BINDABLE_ACTIONS) binds[action.id] = action.code;
+  const merged = { ...CONTROL_DEFAULTS, binds };
+  if (saved && typeof saved === 'object') {
+    for (const key of Object.keys(CONTROL_DEFAULTS)) {
+      if (saved[key] !== undefined) merged[key] = saved[key];
+    }
+    if (saved.binds && typeof saved.binds === 'object') {
+      for (const action of BINDABLE_ACTIONS) {
+        const code = saved.binds[action.id];
+        if (typeof code === 'string' && code) merged.binds[action.id] = code;
+      }
+    }
+  }
+  merged.mouseSensitivity = THREE.MathUtils.clamp(Number(merged.mouseSensitivity) || 1, 0.2, 3);
+  merged.adsSensitivity = THREE.MathUtils.clamp(Number(merged.adsSensitivity) || 0.8, 0.2, 1.5);
+  merged.fov = THREE.MathUtils.clamp(Math.round(Number(merged.fov) || 75), 60, 110);
+  merged.invertY = Boolean(merged.invertY);
+  return merged;
+}
+const controls = loadControls();
+function saveControls() { try { mapStorage?.setItem(CONTROLS_KEY, JSON.stringify(controls)); } catch {} }
+// SCOPE.hipFov ships frozen; the settings screen owns the live base FOV.
+let baseFov = controls.fov;
+
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87a8c8);
 scene.fog = new THREE.Fog(0x87a8c8, HAZE.near, HAZE.far);
 
-const camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 1, 20000);
+const camera = new THREE.PerspectiveCamera(baseFov, innerWidth / innerHeight, 1, 20000);
 camera.rotation.order = 'YXZ';
 
 let savedGraphics = 'auto';
@@ -1228,6 +1395,9 @@ const frontend = new Frontend({
     classConfirm: blocker.querySelector('[data-action="class-confirm"]'),
     onAction: (name) => menuAction(name),
   },
+  onChooseMode: (mode) => { gameMode = mode; start(mode); },
+  onOpenLobby: () => renderLobby(),
+  onCloseLobby: () => renderLobby(),
   onPlay: () => requestPlay(),
   onResume: () => requestPlay(),
   onSelectLoadout: (picked) => applyLoadout(picked),
@@ -1416,9 +1586,420 @@ fullscreenButton.addEventListener('click', async () => {
 document.addEventListener('fullscreenchange', () => {
   fullscreenButton.textContent = document.fullscreenElement ? 'Exit full screen' : 'Full screen';
 });
+
+// ---------- multiplayer rooms (PeerJS) ----------
+// One map load hosts at most one room. The lobby screen owns creation and
+// joining; after that every frame ships a small state packet and the message
+// handler applies what arrives: positions, shots, hits, deaths, respawns,
+// deploy and restart orders. Damage authority is the victim.
+const remotePlayers = new Map();
+const lobby = { session: null, connecting: false, deployed: false };
+const lobbyEls = {
+  name: document.getElementById('fe-player-name'),
+  code: document.getElementById('fe-room-code'),
+  create: document.getElementById('fe-room-create'),
+  join: document.getElementById('fe-room-join'),
+  choice: document.getElementById('fe-lobby-choice'),
+  live: document.getElementById('fe-room-live'),
+  codeDisplay: document.getElementById('fe-room-code-display'),
+  roster: document.getElementById('fe-roster'),
+  status: document.getElementById('fe-room-status'),
+  deploy: document.getElementById('fe-room-deploy'),
+  copy: document.getElementById('fe-room-copy'),
+  leave: document.getElementById('fe-room-leave'),
+  mapLabel: document.getElementById('fe-lobby-map'),
+};
+function lobbyName() {
+  const saved = mapStorage?.getItem('vibeslops:name');
+  const value = String(lobbyEls.name.value || saved || '').trim().toUpperCase().slice(0, 16);
+  return value || 'OPERATIVE';
+}
+function netActive() { return gameMode === 'multi' && Boolean(lobby.session) && !lobby.session.ended; }
+function netSend(message) { if (netActive()) lobby.session.send(message); }
+
+function renderLobby() {
+  if (lobbyEls.mapLabel) lobbyEls.mapLabel.textContent = activeMap.name;
+  const session = lobby.session;
+  if (!session) {
+    lobbyEls.choice.hidden = false;
+    lobbyEls.live.hidden = true;
+    return;
+  }
+  lobbyEls.choice.hidden = true;
+  lobbyEls.live.hidden = false;
+  lobbyEls.codeDisplay.textContent = session.code;
+  lobbyEls.roster.replaceChildren(...session.roster().map((entry) => {
+    const row = document.createElement('li');
+    const name = document.createElement('span');
+    name.textContent = `${entry.name}${entry.id === session.id ? ' (you)' : ''}`;
+    const tag = document.createElement('small');
+    tag.textContent = entry.host ? 'HOST' : 'READY';
+    row.append(name, tag);
+    return row;
+  }));
+  lobbyEls.deploy.hidden = !session.isHost;
+  lobbyEls.copy.hidden = false;
+  lobbyEls.status.textContent = lobby.connecting ? 'Connecting…'
+    : session.isHost
+      ? (session.others().length ? 'Room open — deploy when ready.' : 'Room open — share the code.')
+      : 'Waiting for the host to deploy…';
+}
+
+async function createRoom() {
+  if (lobby.connecting || lobby.session) return;
+  lobby.connecting = true;
+  lobbyEls.status.textContent = 'Opening room…';
+  try {
+    lobby.session = await NetSession.host({
+      name: lobbyName(),
+      mapId: activeMap.id,
+      onEvent: netOnEvent,
+    });
+  } catch (error) {
+    lobbyEls.status.textContent = error?.message ?? 'Could not open a room.';
+  }
+  lobby.connecting = false;
+  syncRemotePlayers();
+  renderLobby();
+}
+
+async function joinRoom(code) {
+  if (lobby.connecting || lobby.session) return;
+  const clean = String(code ?? lobbyEls.code.value).toUpperCase().replace(/[^0-9A-Z]/g, '');
+  if (clean.length !== 5) {
+    lobbyEls.status.textContent = 'Enter the 5-letter room code.';
+    return;
+  }
+  lobby.connecting = true;
+  lobbyEls.status.textContent = 'Joining…';
+  try {
+    lobby.session = await NetSession.join({
+      name: lobbyName(),
+      mapId: activeMap.id,
+      code: clean,
+      onEvent: netOnEvent,
+    });
+  } catch (error) {
+    lobby.connecting = false;
+    lobby.session = null;
+    if (error?.mapId) {
+      // Same room, other map: remember the room and reload on the right map.
+      try { sessionStorage.setItem(REJOIN_KEY, JSON.stringify({ code: clean, name: lobbyName() })); } catch {}
+      const url = new URL(location.href);
+      url.searchParams.set('map', error.mapId);
+      url.searchParams.set('room', clean);
+      location.assign(url);
+      return;
+    }
+    lobbyEls.status.textContent = error?.message ?? 'Could not join the room.';
+    renderLobby();
+    return;
+  }
+  lobby.connecting = false;
+  syncRemotePlayers();
+  renderLobby();
+}
+
+function leaveRoom() {
+  if (!lobby.session) return;
+  for (const puppet of remotePlayers.values()) puppet.dispose();
+  remotePlayers.clear();
+  lobby.session.leave();
+  lobby.session = null;
+  lobby.deployed = false;
+  renderLobby();
+}
+
+function netOnEvent(event) {
+  if (!event || typeof event !== 'object') return;
+  if (event.type === 'message') { netHandleMessage(event.data, event.data?.from); return; }
+  if (event.type === 'roster') { syncRemotePlayers(); renderLobby(); return; }
+  if (event.type === 'close' || event.type === 'error') {
+    if (event.type === 'error') console.warn('net:', event.error);
+    if (!lobby.session) return;
+    // A dropped host ends the room; a dropped client is just a roster change.
+    if (!lobby.session.isHost) {
+      for (const puppet of remotePlayers.values()) puppet.dispose();
+      remotePlayers.clear();
+      lobby.session = null;
+      lobby.deployed = false;
+      renderLobby();
+      lobbyEls.status.textContent = 'The room closed.';
+    }
+  }
+}
+
+// Keep the local puppet set in step with the room roster. Bodies appear once
+// the sender's first state lands, and are hidden-but-registered until then.
+function syncRemotePlayers() {
+  const session = lobby.session;
+  if (!session || gameMode !== 'multi' || !enemies) return;
+  const seen = new Set();
+  for (const entry of session.roster()) {
+    if (!entry || entry.id === session.id) continue;
+    seen.add(entry.id);
+    match.register(entry.id, entry.name);
+    if (!remotePlayers.has(entry.id)) {
+      try {
+        const puppet = new RemotePuppet(enemies, { id: entry.id, name: entry.name });
+        puppet.root.visible = false;
+        remotePlayers.set(entry.id, puppet);
+      } catch (error) {
+        console.warn('remote puppet failed:', error);
+      }
+    }
+  }
+  for (const [id, puppet] of remotePlayers) {
+    if (seen.has(id)) continue;
+    puppet.dispose();
+    remotePlayers.delete(id);
+    match.combatants.delete(id);
+  }
+}
+
+function netHandleMessage(data, from) {
+  if (!data || typeof data !== 'object' || !lobby.session) return;
+  const me = lobby.session.id;
+  if (data.t === 'state') {
+    const puppet = remotePlayers.get(from);
+    if (!puppet || puppet.dead) return;
+    puppet.applyState(data);
+    puppet.root.visible = true;
+    return;
+  }
+  if (data.t === 'shot') {
+    const puppet = remotePlayers.get(from);
+    if (!puppet || puppet.dead) return;
+    puppet.shotsFired += 1;
+    const origin = puppet.muzzlePosition(new THREE.Vector3());
+    const direction = new THREE.Vector3(data.d?.[0] ?? 0, data.d?.[1] ?? 0, data.d?.[2] ?? -1).normalize();
+    raycaster.set(origin, direction);
+    raycaster.near = 1;
+    raycaster.far = 6000;
+    const impact = raycaster.intersectObject(collisionRoot, true)[0]?.point
+      ?? origin.clone().addScaledVector(direction, 6000);
+    weaponEffects.addTracer(origin.clone(), impact);
+    weaponEffects.addMuzzleFlash(origin, direction);
+    weaponEffects.playShotAt(origin, { key: puppet.index % 8, weapon: 'hk416' });
+    weaponEffects.playWhizby?.(origin, impact);
+    return;
+  }
+  if (data.t === 'hit') {
+    // The victim owns their health; only they apply this.
+    if (data.to !== me) return;
+    const puppet = remotePlayers.get(from);
+    playerHealth?.takeDamage(Number(data.damage) || 0, puppet ?? { remoteId: from, root: null });
+    return;
+  }
+  if (data.t === 'died') {
+    match.recordKill(data.killer, data.victim, data.detail ?? null);
+    const puppet = remotePlayers.get(data.victim);
+    if (puppet) {
+      puppet.die();
+      const position = puppet.root.position.clone();
+      worldAudio?.death({ position });
+      worldAudio?.bodyfall({ surface: surfaceProbe?.surfaceAt(position), position });
+    }
+    return;
+  }
+  if (data.t === 'respawn') {
+    const puppet = remotePlayers.get(from);
+    puppet?.respawnAt({ p: data.p, yaw: data.yaw });
+    return;
+  }
+  if (data.t === 'start') { netDeploy(); return; }
+  if (data.t === 'restart') { restartMatch(); requestPlay(); return; }
+}
+
+function netDeploy() {
+  match.reset();
+  match.register('player', lobbyName(), { human: true });
+  matchEndedHandled = false;
+  scoreboardHeld = false;
+  scoreboard.classList.remove('visible');
+  lobby.deployed = true;
+  resetPlayerLife();
+  renderMatchUi();
+  requestPlay();
+}
+
+lobbyEls.name.addEventListener('input', () => {
+  try { mapStorage?.setItem('vibeslops:name', lobbyName()); } catch {}
+});
+for (const element of [lobbyEls.name, lobbyEls.code]) {
+  element.addEventListener('click', (event) => event.stopPropagation());
+  element.addEventListener('keydown', (event) => event.stopPropagation());
+}
+lobbyEls.create.addEventListener('click', (event) => { event.stopPropagation(); menuCue('uin_main_enter'); createRoom(); });
+lobbyEls.join.addEventListener('click', (event) => { event.stopPropagation(); menuCue('uin_main_enter'); joinRoom(); });
+lobbyEls.code.addEventListener('keydown', (event) => {
+  if (event.code !== 'Enter') return;
+  event.stopPropagation();
+  joinRoom();
+});
+lobbyEls.deploy.addEventListener('click', (event) => {
+  event.stopPropagation();
+  menuCue('uin_main_enter');
+  if (!lobby.session?.isHost) return;
+  lobby.session.send({ t: 'start' });
+  netDeploy();
+});
+lobbyEls.copy.addEventListener('click', (event) => {
+  event.stopPropagation();
+  const url = new URL(location.href);
+  url.search = `?room=${lobby.session?.code ?? ''}`;
+  const text = url.toString();
+  const done = () => { lobbyEls.status.textContent = 'Invite link copied.'; };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(text).then(done, () => { lobbyEls.status.textContent = text; });
+  else lobbyEls.status.textContent = text;
+});
+lobbyEls.leave.addEventListener('click', (event) => { event.stopPropagation(); menuCue('uin_cmn_backout'); leaveRoom(); });
+
+// An invite link (?room=CODE) or a map-change reload rejoins automatically.
+function autoRejoin() {
+  const saved = (() => {
+    try { return JSON.parse(sessionStorage.getItem(REJOIN_KEY) ?? 'null'); } catch { return null; }
+  })();
+  try { sessionStorage.removeItem(REJOIN_KEY); } catch {}
+  const code = inviteRoom ?? saved?.code;
+  if (!code || !inviteRoom) return;
+  const name = saved?.name;
+  if (name) {
+    lobbyEls.name.value = name;
+    try { mapStorage?.setItem('vibeslops:name', name); } catch {}
+  }
+  lobbyEls.code.value = String(code).toUpperCase();
+  joinRoom(code);
+}
+
+// ---------- settings screen ----------
+function prettyKeyCode(code) {
+  return String(code ?? '')
+    .replace(/^Key/, '')
+    .replace(/^Digit/, '')
+    .replace(/^Arrow/, '')
+    .replace(/^Numpad/, 'NUM ')
+    .replace('Left', '·L')
+    .replace('Right', '·R')
+    .toUpperCase() || '—';
+}
+const bindButtons = new Map();
+function refreshBindButtons() {
+  for (const [button, action] of bindButtons) button.textContent = prettyKeyCode(controls.binds[action.id]);
+}
+function refreshSettingsUi() {
+  const mouse = document.getElementById('set-mouse-sens');
+  const ads = document.getElementById('set-ads-sens');
+  const fov = document.getElementById('set-fov');
+  const invert = document.getElementById('set-invert-y');
+  const touch = document.getElementById('set-touch-sens');
+  if (mouse) { mouse.value = String(controls.mouseSensitivity); document.getElementById('set-mouse-sens-value').textContent = `${controls.mouseSensitivity.toFixed(1)}×`; }
+  if (ads) { ads.value = String(controls.adsSensitivity); document.getElementById('set-ads-sens-value').textContent = `${Math.round(controls.adsSensitivity * 100)}%`; }
+  if (fov) { fov.value = String(controls.fov); document.getElementById('set-fov-value').textContent = `${controls.fov}°`; }
+  if (invert) invert.checked = Boolean(controls.invertY);
+  if (touch) {
+    touch.value = String(touchControls.sensitivity);
+    document.getElementById('set-touch-sens-value').textContent = `${touchControls.sensitivity.toFixed(1)}×`;
+  }
+  refreshBindButtons();
+}
+function buildBindRows() {
+  const grid = document.getElementById('fe-binds');
+  if (!grid) return;
+  for (const action of BINDABLE_ACTIONS) {
+    const row = document.createElement('div');
+    row.className = 'fe-bind-row';
+    const label = document.createElement('label');
+    label.textContent = action.label;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      menuCue('uin_main_nav');
+      beginBindCapture(button, action);
+    });
+    bindButtons.set(button, action);
+    row.append(label, button);
+    grid.appendChild(row);
+  }
+  refreshBindButtons();
+}
+let bindCapture = { active: false, button: null, action: null };
+function beginBindCapture(button, action) {
+  if (bindCapture.active && bindCapture.button) bindCapture.button.classList.remove('listening');
+  bindCapture = { active: true, button, action };
+  button.classList.add('listening');
+  button.textContent = 'PRESS A KEY';
+}
+window.addEventListener('keydown', (event) => {
+  if (!bindCapture.active) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  const { button, action } = bindCapture;
+  bindCapture = { active: false, button: null, action: null };
+  button.classList.remove('listening');
+  if (event.code === 'Escape') { button.textContent = prettyKeyCode(controls.binds[action.id]); return; }
+  // A key already in use swaps assignments, so nothing becomes unreachable.
+  for (const other of BINDABLE_ACTIONS) {
+    if (other.id !== action.id && controls.binds[other.id] === event.code) {
+      controls.binds[other.id] = controls.binds[action.id];
+    }
+  }
+  controls.binds[action.id] = event.code;
+  saveControls();
+  refreshBindButtons();
+  updateControlHints();
+}, { capture: true });
+function wireSettingsInputs() {
+  const mouse = document.getElementById('set-mouse-sens');
+  const ads = document.getElementById('set-ads-sens');
+  const fov = document.getElementById('set-fov');
+  const invert = document.getElementById('set-invert-y');
+  const touch = document.getElementById('set-touch-sens');
+  mouse?.addEventListener('input', () => {
+    controls.mouseSensitivity = Number(mouse.value);
+    document.getElementById('set-mouse-sens-value').textContent = `${controls.mouseSensitivity.toFixed(1)}×`;
+    saveControls();
+  });
+  ads?.addEventListener('input', () => {
+    controls.adsSensitivity = Number(ads.value);
+    document.getElementById('set-ads-sens-value').textContent = `${Math.round(controls.adsSensitivity * 100)}%`;
+    saveControls();
+  });
+  invert?.addEventListener('change', () => { controls.invertY = invert.checked; saveControls(); });
+  fov?.addEventListener('input', () => {
+    controls.fov = Math.round(Number(fov.value));
+    baseFov = controls.fov;
+    document.getElementById('set-fov-value').textContent = `${controls.fov}°`;
+    saveControls();
+  });
+  touch?.addEventListener('input', () => {
+    touchControls.setSensitivity(touch.value);
+    document.getElementById('set-touch-sens-value').textContent = `${touchControls.sensitivity.toFixed(1)}×`;
+    const legacy = document.getElementById('touch-sensitivity');
+    if (legacy) {
+      legacy.value = String(touchControls.sensitivity);
+      document.getElementById('touch-sensitivity-value').textContent = `${touchControls.sensitivity.toFixed(1)}×`;
+    }
+  });
+  document.getElementById('fe-settings')?.addEventListener('click', (event) => event.stopPropagation());
+  buildBindRows();
+  refreshSettingsUi();
+}
+wireSettingsInputs();
+function resetControlSettings() {
+  Object.assign(controls, CONTROL_DEFAULTS);
+  for (const action of BINDABLE_ACTIONS) controls.binds[action.id] = action.code;
+  baseFov = controls.fov;
+  saveControls();
+  refreshSettingsUi();
+  updateControlHints();
+}
+
 // Secondary touch contacts do not consistently synthesize clicks. Menu
 // shortcuts must still work while the other thumb is holding movement/fire.
 let suppressShortcutClick = false;
+let netStateTimer = 0;
 document.addEventListener('pointerdown', () => { suppressShortcutClick = false; }, true);
 document.addEventListener('click', (event) => {
   if (!suppressShortcutClick) return;
@@ -1464,7 +2045,7 @@ function canControlPlayer() {
 }
 
 function applyLook(x, y, sensitivity = 0.0022) {
-  sensitivity *= zoomLookScale(camera.fov, SCOPE.hipFov);
+  sensitivity *= zoomLookScale(camera.fov, baseFov);
   yawPitch.setFromQuaternion(camera.quaternion);
   yawPitch.y -= x * sensitivity;
   yawPitch.x = THREE.MathUtils.clamp(yawPitch.x - y * sensitivity, -Math.PI / 2, Math.PI / 2);
@@ -1495,20 +2076,25 @@ function suspendPlay() {
 
 function updateControlHints() {
   if (!ready) return;
+  const B = controls.binds;
+  const key = (id, fallback) => prettyKeyCode(B[id] ?? fallback);
   frontend.controls = touchControls.mode ? [
     'Left thumb move · Right thumb swipe to look',
     'Hold FIRE and drag to aim · JUMP · RELOAD',
     'SWITCH guns · MELEE · Hold FRAG to cook, release to throw · Tap SMOKE',
     'Pause for classes and sensitivity · Scores at top right',
   ] : [
-    'WASD move · Shift sprint · Space jump · C/Ctrl crouch',
-    'Left mouse fire · Right mouse aim · R reload · B respawn',
-    '1/2 or wheel switch guns · E melee · G frag (hold to cook) · Q smoke',
-    'K cycle camo · N navmesh · V collision · P path · Esc pause',
+    `${key('forward','W')}${key('back','S')}${key('left','A')}${key('right','D')} move · ${key('sprint','SHIFT')} sprint · ${key('jump','SPACE')} jump · ${key('crouch','C')}/CTRL crouch`,
+    `Left mouse fire · Right mouse aim · ${key('reload','R')} reload · ${key('respawn','B')} respawn`,
+    `${key('switch1','1')}/${key('switch2','2')} or wheel switch guns · ${key('melee','E')} melee · ${key('frag','G')} frag (hold to cook) · ${key('smoke','Q')} smoke`,
+    `${key('camo','K')} cycle camo · N navmesh · V collision · P path · ESC pause · Settings in pause`,
   ];
   frontend.render();
   const prompt = document.querySelector('.fe-prompt');
-  if (prompt && touchControls.mode) prompt.textContent = 'Tap to deploy';
+  if (!prompt) return;
+  if (touchControls.mode) prompt.textContent = 'Tap to deploy';
+  else if (frontend.mode === 'multi') prompt.textContent = 'Click to open a multiplayer room';
+  else prompt.textContent = 'Click to play';
 }
 
 const weaponEffects = new WeaponEffects(scene);
@@ -1695,7 +2281,7 @@ function selectWeapon(id) {
   viewmodel.scene.add(viewmodelProbe);
   viewmodel.scene.visible = !playerHealth?.dead;
   viewmodel.resetAiming();
-  scopeState.fov = camera.fov = SCOPE.hipFov;
+  scopeState.fov = camera.fov = baseFov;
   camera.updateProjectionMatrix();
   crosshair.classList.remove('ads');
   lastAdsState = false;
@@ -1725,7 +2311,9 @@ function progress(name, event) {
 
 function combatantId(actor) {
   if (!actor) return null;
-  return actor === player ? 'player' : Number.isInteger(actor.index) ? `bot-${actor.index}` : null;
+  if (actor === player) return 'player';
+  if (actor.remoteId) return actor.remoteId;
+  return Number.isInteger(actor.index) ? `bot-${actor.index}` : null;
 }
 
 function resetPlayerLife() {
@@ -1755,9 +2343,22 @@ function resetPlayerLife() {
   deathSource = null;
   document.body.classList.remove('player-dead');
   deathCard.style.display = 'none';
+  // A multiplayer respawn is public: everyone else's copy of this body
+  // has to stand back up somewhere they can see it happen.
+  if (netActive()) {
+    yawPitch.setFromQuaternion(camera.quaternion);
+    netSend({
+      t: 'respawn',
+      p: [player.position.x, player.position.y, player.position.z],
+      yaw: yawPitch.y,
+    });
+  }
 }
 
 function restartMatch() {
+  // In a room the host restarts everyone together; a client asking is a no-op.
+  if (netActive() && !lobby.session.isHost) return;
+  if (netActive()) netSend({ t: 'restart' });
   match.reset();
   medals?.reset();
   for (const { popup } of medalPopups) popup.remove();
@@ -1808,7 +2409,8 @@ function renderMatchUi() {
   matchResult.textContent = state.phase === 'ended'
     ? `${winner?.id === 'player' ? 'VICTORY' : `${winner?.name ?? 'Unknown'} wins`}${touchControls.mode ? '' : ' · press Enter to play again'}`
     : `First to ${state.scoreLimit} kills${touchControls.mode ? '' : ' · hold Tab for scores'}`;
-  document.getElementById('touch-restart').hidden = state.phase !== 'ended';
+  document.getElementById('touch-restart').hidden = state.phase !== 'ended'
+    || (gameMode === 'multi' && !lobby.session?.isHost);
   document.getElementById('touch-score-close').hidden = state.phase === 'ended';
   scoreboard.classList.toggle('visible', scoreboardHeld || state.phase === 'ended');
 }
@@ -1863,6 +2465,7 @@ function menuAction(name) {
   }
   if (name === 'navmesh') navigationVisible = !navigationVisible;
   if (name === 'collision') collisionVisible = !collisionVisible;
+  if (name === 'settings-reset') resetControlSettings();
   setDebugVisibility();
 }
 
@@ -1935,7 +2538,7 @@ function clearKeys() {
   viewmodel.resetAiming();
   setScoped(false, null);
   scopeState.holding = false;
-  scopeState.fov = camera.fov = SCOPE.hipFov;
+  scopeState.fov = camera.fov = baseFov;
   camera.updateProjectionMatrix();
 }
 
@@ -1966,17 +2569,33 @@ function fireShot({ triggerShotCount = 0 } = {}) {
   // region it struck, both per the weapon file.
   const spread = gunplay.spread.sample(spreadState());
   gunplay.spread.onShot();
+  // Remote humans are hit like bots are — their hitboxes ride the same
+  // target list — but damage is only claimed locally and shipped to the
+  // victim, who owns their own health.
+  const targets = [...(enemies?.hitTargets ?? [])];
+  if (netActive()) for (const puppet of remotePlayers.values()) {
+    if (!puppet.dead) targets.push(...puppet.hitboxes);
+  }
   weaponEffects.fire(camera, collisionRoot, viewmodel.muzzlePosition(), {
-    targets: enemies?.hitTargets ?? [],
+    targets,
     weapon: activeWeaponId,
     spread,
     penetration: gunplay.ballistics.penetrateType,
   });
-  // A round can pass thin cover and bodies, so every body it reached takes
-  // its share; the marker reports the best outcome of the lot.
   let best = null;
+  let remoteHit = null;
   for (const entry of weaponEffects.lastShot?.hits ?? []) {
     if (!entry.enemy) continue;
+    const hitData = entry.hit?.object?.userData?.enemyHit;
+    if (hitData?.remote) {
+      const region = hitData.region ?? 'torso';
+      const distance = entry.hit.distance ?? 0;
+      const damage = damageAtDistance(gunplay.ballistics, distance)
+        * locationMultiplier(gunplay.ballistics, region) * entry.scale;
+      netSend({ t: 'hit', to: hitData.enemy.remoteId, damage, region, weapon: activeWeaponId });
+      if (!remoteHit || region === 'head') remoteHit = { region };
+      continue;
+    }
     const damaged = enemies?.handlePlayerHit(entry.hit, (region, distance) => (
       damageAtDistance(gunplay.ballistics, distance) * locationMultiplier(gunplay.ballistics, region) * entry.scale
     ));
@@ -1988,7 +2607,17 @@ function fireShot({ triggerShotCount = 0 } = {}) {
     showHitmarker(best.killed ? 'kill' : best.region === 'head' ? 'head' : 'torso');
     weaponEffects.playHitmarker(best);
   }
+  if (remoteHit) {
+    // Optimistic marker: the victim's death broadcast confirms the kill.
+    showHitmarker(remoteHit.region === 'head' ? 'head' : 'torso');
+    weaponEffects.playHitmarker({ region: remoteHit.region, killed: false });
+  }
   enemies?.alert(player.position, 1500, player.position);
+  // Everyone else sees the shot from the sender's own puppet muzzle.
+  if (netActive()) {
+    const direction = camera.getWorldDirection(new THREE.Vector3());
+    netSend({ t: 'shot', d: [direction.x, direction.y, direction.z] });
+  }
 
   // View kick from the weapon file, on top of the authored weapon animation.
   // The kick recentres over the next frames in tick(), so a held burst climbs
@@ -2007,7 +2636,9 @@ function nudgeView(pitch, yaw) {
 
 // Which side of the view a shooter is on, for the flinch: -1 left, 1 right.
 function shooterSide(source) {
-  const position = Number.isInteger(source?.index) ? enemies?.targetPosition(source) : null;
+  const position = source?.remoteId
+    ? source.root?.position.clone() ?? null
+    : Number.isInteger(source?.index) ? enemies?.targetPosition(source) : null;
   if (!position) return 0;
   const forward = camera.getWorldDirection(new THREE.Vector3());
   const toSource = position.clone().sub(camera.position);
@@ -2028,7 +2659,7 @@ function setScoped(scoped, definition) {
 // glass sway, returned in radians for this frame.
 function updateScope(dt, { holdBreath = false, active = true } = {}) {
   const scope = activeWeaponSlot.definition.scope ?? null;
-  const target = adsFieldOfView(SCOPE.hipFov, scope?.zoomFov ?? gunplay.ballistics.adsZoomFov ?? viewmodel.adsFov, viewmodel.aimBlend);
+  const target = adsFieldOfView(baseFov, scope?.zoomFov ?? gunplay.ballistics.adsZoomFov ?? viewmodel.adsFov, viewmodel.aimBlend);
   if (target !== scopeState.fov) {
     scopeState.fov = target;
     camera.fov = target;
@@ -2309,7 +2940,7 @@ function getDebugState() {
       fov: debugRound(camera.fov),
       aimBlend: debugRound(viewmodel.aimBlend),
       adsZoomFov: gunplay.ballistics.adsZoomFov,
-      lookSensitivityScale: debugRound(zoomLookScale(camera.fov, SCOPE.hipFov)),
+      lookSensitivityScale: debugRound(zoomLookScale(camera.fov, baseFov)),
       breathHeld: scopeState.holding,
     },
     loadout: { ...loadout },
@@ -2540,7 +3171,12 @@ document.addEventListener('pointerlockchange', () => {
 
 document.addEventListener('mousemove', (event) => {
   if (!canControlPlayer() || event.sourceCapabilities?.firesTouchEvents) return;
-  applyLook(event.movementX, event.movementY);
+  // The settings screen owns sensitivity: a base for the mouse, a separate
+  // multiplier while aiming down sights, and an optional flipped vertical.
+  const aiming = viewmodel.aimBlend > 0.5;
+  const scale = 0.0022 * controls.mouseSensitivity * (aiming ? controls.adsSensitivity : 1);
+  const y = controls.invertY ? -event.movementY : event.movementY;
+  applyLook(event.movementX, y, scale);
 });
 
 document.addEventListener('mousedown', (event) => {
@@ -2569,7 +3205,12 @@ document.addEventListener('keydown', (event) => {
     return;
   }
   if (event.code === 'Enter' && match.phase === 'ended') {
-    restartMatch();
+    // In multiplayer only the host may restart everyone at once;
+    // restartMatch itself broadcasts the order to the room.
+    if (gameMode === 'single' || lobby.session?.isHost) {
+      restartMatch();
+      requestPlay();
+    }
     return;
   }
   // Any key but Esc starts or resumes from the shell — Esc is what released
@@ -2578,17 +3219,25 @@ document.addEventListener('keydown', (event) => {
     if (frontend.screen === 'class') {
       if (event.code === 'Escape' || event.code === 'Backspace') frontend.closeClass();
       if (event.code === 'Enter') frontend.confirmClass();
+    } else if (frontend.screen === 'settings') {
+      if (event.code === 'Escape' || event.code === 'Backspace') frontend.closeSettings();
+    } else if (frontend.screen === 'lobby') {
+      if (event.code === 'Escape' || event.code === 'Backspace') frontend.closeLobby();
+    } else if (frontend.screen === 'mode') {
+      if (event.code === 'Enter') frontend.chooseMode('single');
     } else if (event.code !== 'Escape') frontend.play();
     return;
   }
-  if (event.code === 'KeyR' && locked) reloadWeapon();
+  // Gameplay actions read the remappable binds, not fixed codes.
+  const B = controls.binds;
+  if (event.code === B.reload && locked) reloadWeapon();
   // 1 and 2 are the class's two guns; the wheel walks between them too.
-  if (event.code === 'Digit1' && locked && activeWeaponId !== loadout.primary) switchHeldWeapon(1);
-  if (event.code === 'Digit2' && locked && activeWeaponId !== loadout.secondary) switchHeldWeapon(1);
-  if (event.code === 'KeyE' && locked) meleeAttack();
-  if (event.code === 'KeyG' && locked) beginGrenade('lethal');
-  if (event.code === 'KeyQ' && locked) beginGrenade('tactical');
-  if (event.code === 'KeyB' && locked) {
+  if (event.code === B.switch1 && locked && activeWeaponId !== loadout.primary) switchHeldWeapon(1);
+  if (event.code === B.switch2 && locked && activeWeaponId !== loadout.secondary) switchHeldWeapon(1);
+  if (event.code === B.melee && locked) meleeAttack();
+  if (event.code === B.frag && locked) beginGrenade('lethal');
+  if (event.code === B.smoke && locked) beginGrenade('tactical');
+  if (event.code === B.respawn && locked) {
     if (playerHealth) playerHealth.respawn();
     else player?.respawn();
   }
@@ -2601,7 +3250,7 @@ document.addEventListener('keydown', (event) => {
     setDebugVisibility();
   }
   if (event.code === 'KeyP') showPathToCrosshair();
-  if (event.code === 'KeyK' && locked) {
+  if (event.code === B.camo && locked) {
     viewmodel.cycleCamo();
     setCamoEverywhere(viewmodel.camo);
   }
@@ -2633,8 +3282,9 @@ document.addEventListener('wheel', (event) => {
   switchHeldWeapon(event.deltaY > 0 ? 1 : -1);
 }, { passive: false });
 
-async function start() {
+async function start(mode = gameMode) {
   try {
+    gameMode = mode === 'multi' ? 'multi' : 'single';
     // A map picked by link may not be baked yet. Fail with its name rather
     // than with whichever asset the loader happened to reach first.
     if (!activeMap.baked) {
@@ -2758,7 +3408,23 @@ async function start() {
       onDeath: ({ source }) => {
         clearKeys();
         deathSource = source;
-        match.recordKill(combatantId(source), 'player');
+        if (netActive()) {
+          // The victim owns the kill record in multiplayer: one broadcast,
+          // applied by everyone, keeps the scoreboards in step.
+          const killer = combatantId(source);
+          const killerBody = killer ? remotePlayers.get(killer) : null;
+          const distance = killerBody
+            ? player.position.distanceTo(killerBody.root.position)
+            : null;
+          netSend({
+            t: 'died',
+            killer,
+            victim: lobby.session.id,
+            detail: distance != null ? { distance } : null,
+          });
+        } else {
+          match.recordKill(combatantId(source), 'player');
+        }
         medals?.onDeath();
         player.setEnabled(false);
         weapon.setTrigger(false);
@@ -2785,7 +3451,7 @@ async function start() {
           playerHealth,
           weaponEffects,
           hints,
-          count: 6,
+          count: gameMode === 'multi' ? 0 : 6,
           // Smoke stands between a bot and its target: it loses sight.
           sightBlocked: (from, to) => grenades?.smokeBlocks(from, to) ?? false,
           onDeath: (victim, source) => {
@@ -2879,6 +3545,8 @@ async function start() {
     globalThis.hijacked = {
       scene, camera, renderer, player, navigation, collisionRoot, collisionWorld, hints, viewmodel,
       weapon, weaponEffects, worldAudio, surfaceProbe, destructibles, playerHealth, enemies, reloadWeapon, selectWeapon, frontend,
+      get lobby() { return lobby; },
+      get remotes() { return [...remotePlayers.values()]; },
       get grenades() { return grenades; },
       get loadout() { return { ...loadout }; },
       get ambience() { return ambience; },
@@ -2900,10 +3568,18 @@ async function start() {
       'Left mouse fire · Right mouse aim · R reload · B respawn',
       'Wheel or 1/2 switch gun · E melee · G frag (hold to cook) · Q smoke',
       'Snipers: right mouse scopes · Shift in the scope holds breath',
-      'K cycle camo · N navmesh · V collision · P path · Esc pause',
+      'K cycle camo · N navmesh · V collision · P path · Esc pause · Settings in pause',
       navigation ? '' : 'Navigation failed to load; collision and walking are still available.',
     ]);
     updateControlHints();
+    // An invite link went straight through the mode picker; its room is
+    // auto-joined now that the map it names is loaded and the class of body
+    // a remote player needs is ready.
+    if (inviteRoom && gameMode === 'multi') {
+      frontend.mode = 'multi';
+      frontend.openLobby();
+      autoRejoin();
+    }
   } catch (error) {
     console.error(error);
     frontend.fail(`Unable to start\n${error instanceof Error ? error.message : error}`);
@@ -2921,12 +3597,13 @@ function tick() {
   const controlsActive = canControlPlayer();
   touchControls.setEnabled(controlsActive, ready && locked && !frontend.visible && !scoreboardHeld && match.phase === 'playing');
   const touch = touchControls.input.read();
+  const B = controls.binds;
   const movement = {
-    forward: Number(Boolean(keys.KeyW)) - Number(Boolean(keys.KeyS)) + touch.forward,
-    strafe: Number(Boolean(keys.KeyD)) - Number(Boolean(keys.KeyA)) + touch.strafe,
-    sprint: Boolean(keys.ShiftLeft || keys.ShiftRight || touch.sprint),
-    crouch: Boolean(keys.ControlLeft || keys.ControlRight || keys.KeyC || touch.crouch),
-    jump: Boolean(keys.Space || touch.jump),
+    forward: Number(Boolean(keys[B.forward])) - Number(Boolean(keys[B.back])) + touch.forward,
+    strafe: Number(Boolean(keys[B.right])) - Number(Boolean(keys[B.left])) + touch.strafe,
+    sprint: Boolean(keys[B.sprint] || touch.sprint),
+    crouch: Boolean(keys[B.crouch] || keys.ControlLeft || keys.ControlRight || touch.crouch),
+    jump: Boolean(keys[B.jump] || touch.jump),
   };
   weapon.setTrigger(controlsActive && (mouseFire || touch.fire));
   viewmodel.setAiming(controlsActive && (mouseAim || touch.aim));
@@ -2942,6 +3619,23 @@ function tick() {
   if (simulationActive && enemySimulationActive) navigation?.update(1 / 60, dt, 5);
   enemies?.update(dt, { active: simulationActive && enemySimulationActive });
   playerHealth?.update(simulationActive ? dt : 0);
+  // Multiplayer: ship this player's state at a fixed cadence and chase the
+  // latest network states for everyone else's bodies. A keepalive goes out
+  // even while paused so lobbies do not look like they emptied.
+  if (netActive() && player) {
+    netStateTimer += dt;
+    if (netStateTimer >= 1 / 12) {
+      netStateTimer = 0;
+      yawPitch.setFromQuaternion(camera.quaternion);
+      netSend({
+        t: 'state',
+        p: [player.position.x, player.position.y, player.position.z],
+        yaw: yawPitch.y,
+        speed: Math.hypot(player.velocity.x, player.velocity.z),
+      });
+    }
+    for (const puppet of remotePlayers.values()) puppet.update(dt);
+  }
   if (simulationActive) match.update(dt);
   weaponEffects.update(dt);
   destructibles?.update(dt);
@@ -3032,7 +3726,7 @@ function tick() {
       moving,
     });
     // Update the world lens after the weapon blend, so both render the same frame.
-    const sway = updateScope(dt, { holdBreath: Boolean(keys.ShiftLeft || keys.ShiftRight || touch.breath), active: controlsActive });
+    const sway = updateScope(dt, { holdBreath: Boolean(keys[controls.binds.sprint] || keys.ShiftLeft || keys.ShiftRight || touch.breath), active: controlsActive });
     nudgeView(sway.pitch, sway.yaw);
 
     viewBob.update(dt, {
@@ -3045,9 +3739,11 @@ function tick() {
     weapon.update(dt, { canFire: controlsActive && sprintState.canFire && !viewmodel.meleeing && !viewmodel.throwing && !viewmodel.rechambering && !viewmodel.pendingRechamber });
 
     if (playerHealth?.dead) {
-      const sourcePosition = Number.isInteger(deathSource?.index) && !deathSource.dead
-        ? enemies?.targetPosition(deathSource)
-        : null;
+      const sourcePosition = deathSource?.remoteId && !deathSource.dead
+        ? deathSource.root?.position.clone() ?? null
+        : Number.isInteger(deathSource?.index) && !deathSource.dead
+          ? enemies?.targetPosition(deathSource)
+          : null;
       if (sourcePosition) camera.lookAt(sourcePosition);
       const sourceEntry = match.getState().standings.find((entry) => entry.id === combatantId(deathSource));
       deathKiller.textContent = sourceEntry ? `Killed by ${sourceEntry.name}` : 'Killed in action';
@@ -3062,18 +3758,28 @@ function tick() {
       if (enemy.shotsFired > seen) hudArt.markEnemyFire(enemy.index);
       lastEnemyShots.set(enemy.index, enemy.shotsFired);
     }
+    for (const puppet of remotePlayers.values()) {
+      const seen = lastEnemyShots.get(puppet.index) ?? 0;
+      if (puppet.shotsFired > seen) hudArt.markEnemyFire(puppet.index);
+      lastEnemyShots.set(puppet.index, puppet.shotsFired);
+    }
 
     yawPitch.setFromQuaternion(camera.quaternion);
     hudArt.update({
       x: p.x,
       z: p.z,
       yaw: yawPitch.y,
-      enemies: enemies?.enemies.map((enemy) => ({
+      enemies: [...(enemies?.enemies ?? []).map((enemy) => ({
         index: enemy.index,
         x: enemy.root.position.x,
         z: enemy.root.position.z,
         dead: enemy.dead,
-      })) ?? [],
+      })), ...[...remotePlayers.values()].map((puppet) => ({
+        index: puppet.index,
+        x: puppet.root.position.x,
+        z: puppet.root.position.z,
+        dead: puppet.dead,
+      }))],
       weapon: {
         name: activeWeaponSlot.definition.name,
         magazine: weapon.magazine,
@@ -3180,11 +3886,21 @@ function renderFrame() {
 // plays all time against 125 GB of bandwidth in the first two days of
 // September. A visit that never starts a match now costs ~2.6 MB, not ~47 MB.
 //
-// The welcome screen asks for input, and the early script above remembers it
-// even while modules are still downloading. Resolve once across all input types.
+// The first gesture now lands on the mode picker: singleplayer or a
+// multiplayer room. The load only begins once the visitor commits to one,
+// because the mode decides whether bots belong in the match. Automation
+// (?autostart) and invite links (?room=CODE) skip the picker.
 globalThis.hijackedStartup.then(() => {
-  frontend.startLoading();
-  start();
+  if (inviteRoom) {
+    frontend.mode = 'multi';
+    if (!frontend.startLoading()) frontend.showMode();
+    start('multi');
+  } else if (new URLSearchParams(location.search).has('autostart')) {
+    frontend.startLoading();
+    start(gameMode);
+  } else {
+    frontend.showMode();
+  }
 });
 tick();
 

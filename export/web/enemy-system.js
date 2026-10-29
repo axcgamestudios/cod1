@@ -1485,4 +1485,152 @@ export class EnemyManager {
   }
 }
 
+/**
+ * A remote human's body on the local client, in a multiplayer room.
+ *
+ * It reuses the baked enemy pose set, weapon mounts, and hitboxes -- those are
+ * exactly the right shape for a third-person humanoid -- but has no AI, no
+ * navmesh agent, and no health of its own: positions arrive from the network,
+ * and the player they represent stays the authority over whether they were
+ * hit. `remoteId` marks the puppet for the combatant-id mapping and every
+ * hitbox carries `remote: true` so the fire dispatcher routes hits into the
+ * net session instead of the bot damage path.
+ */
+export class RemotePuppet {
+  constructor(manager, { id, name = 'Operative', weaponId = 'm27', camo = null, skin = null } = {}) {
+    this.manager = manager;
+    this.remoteId = String(id);
+    this.name = String(name).slice(0, 16) || 'Operative';
+    this.health = 100;
+    this.dead = false;
+    this.index = 10_000 + Math.abs([...String(id)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 7));
+    this.shotsFired = 0;
+
+    this.root = new THREE.Group();
+    this.root.name = `remote_${this.remoteId}`;
+    this.modelRoot = new THREE.Group();
+    this.modelRoot.rotation.y = MODEL_FORWARD_OFFSET;
+    this.root.add(this.modelRoot);
+
+    const weaponTemplate = manager.weaponTemplateFor(weaponId, camo);
+    const skinMaterial = manager.skinMaterialFor(skin);
+    this.visualFrames = Object.fromEntries(Object.entries(manager.poseTemplates).map(([state, templates]) => [
+      state,
+      templates.map((template) => {
+        const body = template.clone(true);
+        if (skinMaterial) {
+          body.traverse((object) => {
+            if (object.isMesh && object.name === 'enemy_body_combined') object.material = skinMaterial;
+          });
+        }
+        const weapon = weaponTemplate.clone(true);
+        this.modelRoot.add(body);
+        const mounts = attachWeapon(body, weapon, manager.weaponMounts[state]);
+        this.modelRoot.remove(body);
+        return { body, weapon, ...mounts };
+      }),
+    ]));
+    this.visualState = null;
+    this.visualFrameIndex = -1;
+    this.visualTime = Math.random();
+    this.visualTimeScale = 1;
+    this.showVisualFrame('idle', 0);
+
+    this.hitboxes = [
+      makeHitbox(new THREE.BoxGeometry(18, 16, 15), new THREE.Vector3(0, 52, 0), this, 1, 'torso'),
+      makeHitbox(new THREE.SphereGeometry(7, 8, 6), new THREE.Vector3(0, 65, 0), this, 1, 'head'),
+      makeHitbox(new THREE.BoxGeometry(17, 29, 13), new THREE.Vector3(0, 16, 0), this, 1, 'legs'),
+      makeHitbox(new THREE.BoxGeometry(18, 18, 15), new THREE.Vector3(0, 35, 0), this, 1, 'torsoLower'),
+    ];
+    for (const box of this.hitboxes) box.userData.enemyHit.remote = true;
+    this.root.add(...this.hitboxes);
+
+    // Interpolation: the network lands a few states per second, the render
+    // loop runs far faster. The body chases the latest target position with a
+    // frame-rate independent lerp that completes in about six frames, which
+    // reads as smooth motion at any send rate and snaps instantly on spawn.
+    this.netPosition = new THREE.Vector3();
+    this.netYaw = 0;
+    this.netSpeed = 0;
+    this.netPitch = 0;
+    manager.scene.add(this.root);
+  }
+
+  muzzlePosition(target = new THREE.Vector3()) {
+    const muzzle = this.visualFrames[this.visualState]?.[this.visualFrameIndex]?.muzzle;
+    return muzzle ? muzzle.getWorldPosition(target) : this.root.position.clone().add(new THREE.Vector3(0, 52, 0));
+  }
+
+  showVisualFrame(state, index) {
+    const frames = this.visualFrames[state] ?? this.visualFrames.idle;
+    const nextIndex = THREE.MathUtils.clamp(index, 0, frames.length - 1);
+    if (this.visualState === state && this.visualFrameIndex === nextIndex) return;
+    if (this.visualState) {
+      this.modelRoot.remove(this.visualFrames[this.visualState][this.visualFrameIndex].body);
+    }
+    const frame = frames[nextIndex];
+    this.modelRoot.add(frame.body);
+    this.visualState = state;
+    this.visualFrameIndex = nextIndex;
+  }
+
+  /** Accept one network state. `p` is the sender's feet position. */
+  applyState({ p, yaw = 0, pitch = 0, speed = 0 } = {}) {
+    this.netPosition.set(p?.[0] ?? 0, p?.[1] ?? 0, p?.[2] ?? 0);
+    this.netYaw = Number(yaw) || 0;
+    this.netPitch = Number(pitch) || 0;
+    this.netSpeed = Number(speed) || 0;
+  }
+
+  die() {
+    if (this.dead) return;
+    this.dead = true;
+    this.health = 0;
+    this.visualTime = 0;
+    this.showVisualFrame('death', 0);
+  }
+
+  respawnAt({ p, yaw = 0 } = {}) {
+    this.dead = false;
+    this.health = 100;
+    this.root.position.set(p?.[0] ?? 0, p?.[1] ?? 0, p?.[2] ?? 0);
+    this.root.rotation.y = Number(yaw) || 0;
+    this.netPosition.copy(this.root.position);
+    this.netYaw = this.root.rotation.y;
+    this.netSpeed = 0;
+    this.showVisualFrame('idle', 0);
+  }
+
+  update(deltaSeconds) {
+    if (this.dead) {
+      const frames = this.visualFrames.death ?? this.visualFrames.idle;
+      this.visualTime += deltaSeconds;
+      const rate = this.manager.poseFrameRates?.death ?? 8;
+      this.showVisualFrame('death', Math.min(frames.length - 1, Math.floor(this.visualTime * rate)));
+      return;
+    }
+    const blend = 1 - Math.exp(-10 * Math.max(0, Math.min(deltaSeconds, 0.1)));
+    this.root.position.lerp(this.netPosition, blend);
+    let dy = this.netYaw - this.root.rotation.y;
+    while (dy > Math.PI) dy -= Math.PI * 2;
+    while (dy < -Math.PI) dy += Math.PI * 2;
+    this.root.rotation.y += dy * blend;
+    const state = this.netSpeed > 40 ? 'run' : 'idle';
+    if (state !== this.visualState) this.showVisualFrame(state, 0);
+    this.visualTimeScale = THREE.MathUtils.clamp(this.netSpeed / 230, 0.55, 1.6);
+    if (state === 'run') {
+      const frames = this.visualFrames.run;
+      this.visualTime += deltaSeconds * this.visualTimeScale;
+      const rate = this.manager.poseFrameRates?.run ?? 12;
+      this.showVisualFrame('run', Math.floor(this.visualTime * rate) % frames.length);
+    }
+  }
+
+  dispose() {
+    this.manager.scene.remove(this.root);
+    for (const box of this.hitboxes) box.geometry.dispose();
+    this.hitboxes.length = 0;
+  }
+}
+
 export default EnemyManager;

@@ -27,12 +27,32 @@ const CAPTIONS = {
   'enemy weapon': 'enemy weapon',
 };
 
-export const SCREENS = ['welcome', 'loading', 'title', 'pause', 'class', 'error'];
+export const SCREENS = ['welcome', 'mode', 'loading', 'title', 'pause', 'class', 'lobby', 'settings', 'error'];
+
+// The controls the settings screen offers remaps, with their default keys.
+// Order is the order the screen shows them in.
+export const BINDABLE_ACTIONS = Object.freeze([
+  { id: 'forward', label: 'Move forward', code: 'KeyW' },
+  { id: 'back', label: 'Move back', code: 'KeyS' },
+  { id: 'left', label: 'Strafe left', code: 'KeyA' },
+  { id: 'right', label: 'Strafe right', code: 'KeyD' },
+  { id: 'sprint', label: 'Sprint', code: 'ShiftLeft' },
+  { id: 'jump', label: 'Jump', code: 'Space' },
+  { id: 'crouch', label: 'Crouch', code: 'KeyC' },
+  { id: 'reload', label: 'Reload', code: 'KeyR' },
+  { id: 'melee', label: 'Melee', code: 'KeyE' },
+  { id: 'frag', label: 'Frag grenade', code: 'KeyG' },
+  { id: 'smoke', label: 'Smoke grenade', code: 'KeyQ' },
+  { id: 'switch1', label: 'Primary weapon', code: 'Digit1' },
+  { id: 'switch2', label: 'Secondary weapon', code: 'Digit2' },
+  { id: 'camo', label: 'Cycle camo', code: 'KeyK' },
+  { id: 'respawn', label: 'Respawn', code: 'KeyB' },
+]);
 
 export class Frontend {
   constructor({
     elements = null, onPlay = null, onResume = null, onSelectWeapon = null, onSelectLoadout = null, onOpenClass = null,
-    waitingForInput = false,
+    onChooseMode = null, onOpenLobby = null, onCloseLobby = null, waitingForInput = false,
   } = {}) {
     this.elements = elements;
     this.onPlay = onPlay;
@@ -44,8 +64,15 @@ export class Frontend {
     // Fired when the class screen opens so the game can fetch the rifles it
     // has not loaded yet. Only a player who browses classes pays for them.
     this.onOpenClass = onOpenClass;
+    // Fired when the player commits to singleplayer or multiplayer; the host
+    // page wires this to the deferred heavy load, which needs the mode to
+    // know whether bots belong in the match.
+    this.onChooseMode = onChooseMode;
+    this.onOpenLobby = onOpenLobby;
+    this.onCloseLobby = onCloseLobby;
 
     this.screen = waitingForInput ? 'welcome' : 'loading';
+    this.mode = 'single';
     this.playing = false;
     this.loads = new Map();
     this.expected = new Map();
@@ -75,11 +102,27 @@ export class Frontend {
     return this.screen === 'title' || this.screen === 'pause';
   }
 
+  /** The first visitor gesture opens the mode picker; waiting is not download progress. */
+  showMode() {
+    this.screen = 'mode';
+    this.render();
+    return true;
+  }
+
   /** The first visitor gesture starts loading; waiting is not download progress. */
   startLoading() {
-    if (this.screen !== 'welcome') return false;
+    if (this.screen !== 'welcome' && this.screen !== 'mode') return false;
     this.screen = 'loading';
     this.render();
+    return true;
+  }
+
+  /** Commit to singleplayer or multiplayer; begins the load through the host. */
+  chooseMode(mode) {
+    if (this.screen !== 'mode') return false;
+    this.mode = mode === 'multi' ? 'multi' : 'single';
+    this.startLoading();
+    this.onChooseMode?.(this.mode);
     return true;
   }
 
@@ -365,6 +408,7 @@ export class Frontend {
   play() {
     if (!this.ready) return false;
     if (this.screen === 'pause') this.onResume?.();
+    else if (this.mode === 'multi' && this.screen === 'title') this.openLobby();
     else this.onPlay?.();
     return true;
   }
@@ -378,7 +422,10 @@ export class Frontend {
 
   /** Called when the game gives up pointer lock, by Esc or otherwise. */
   suspend() {
-    if (!this.ready || !this.playing) return false;
+    if (!this.playing) return false;
+    // The shell may have been entered from the lobby (multiplayer deploy), so
+    // the ready getter no longer describes where play can resume from. Any
+    // drop of the lock lands on the pause screen, which always can.
     this.playing = false;
     this.screen = 'pause';
     this.render();
@@ -389,6 +436,7 @@ export class Frontend {
   getState() {
     return {
       screen: this.screen,
+      mode: this.mode,
       visible: this.visible,
       percent: Math.round(this.fraction * 100),
       caption: this.screen === 'loading' ? this.caption : '',
@@ -446,12 +494,54 @@ export class Frontend {
     this.render();
   }
 
+  /** Multiplayer rooms live between the title screen and the lobby. */
+  openLobby() {
+    if (this.screen !== 'title' || this.mode !== 'multi') return false;
+    this.screen = 'lobby';
+    this.playing = false;
+    this.onOpenLobby?.();
+    this.render();
+    return true;
+  }
+
+  closeLobby() {
+    if (this.screen !== 'lobby') return false;
+    this.screen = 'title';
+    this.playing = false;
+    this.onCloseLobby?.();
+    this.render();
+    return this.screen;
+  }
+
+  /** Settings can be reached from every resting screen of the shell. */
+  openSettings() {
+    if (this.screen !== 'title' && this.screen !== 'pause' && this.screen !== 'mode') return false;
+    this.settingsReturnScreen = this.screen;
+    this.screen = 'settings';
+    this.playing = false;
+    this.render();
+    return true;
+  }
+
+  closeSettings() {
+    if (this.screen !== 'settings') return false;
+    this.screen = this.settingsReturnScreen === 'pause' ? 'pause' : this.settingsReturnScreen === 'mode' ? 'mode' : 'title';
+    this.playing = false;
+    this.render();
+    return this.screen;
+  }
+
   /** Shell buttons, including class navigation and card confirmation. */
   action(name) {
     if (name === 'resume') return this.play();
     if (name === 'class') return this.openClass();
     if (name === 'class-back') return this.closeClass();
     if (name === 'class-confirm') return this.confirmClass();
+    if (name === 'mode-single') return this.chooseMode('single');
+    if (name === 'mode-multi') return this.chooseMode('multi');
+    if (name === 'lobby-back') { this.closeLobby(); return true; }
+    if (name === 'settings') return this.openSettings();
+    if (name === 'settings-back') return this.closeSettings();
     return this.elements?.onAction?.(name);
   }
 
