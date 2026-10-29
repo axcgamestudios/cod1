@@ -40,6 +40,9 @@ export const BINDABLE_ACTIONS = Object.freeze([
   { id: 'jump', label: 'Jump', code: 'Space' },
   { id: 'crouch', label: 'Crouch', code: 'KeyC' },
   { id: 'reload', label: 'Reload', code: 'KeyR' },
+  // Aim is remappable like every other action: mouse buttons are stored as
+  // "Mouse0/1/2" codes so the trigger, wheel and side buttons all work.
+  { id: 'aim', label: 'Aim down sights', code: 'Mouse2' },
   { id: 'melee', label: 'Melee', code: 'KeyE' },
   { id: 'frag', label: 'Frag grenade', code: 'KeyG' },
   { id: 'smoke', label: 'Smoke grenade', code: 'KeyQ' },

@@ -2004,7 +2004,14 @@ function autoRejoin() {
 }
 
 // ---------- settings screen ----------
+// Bound codes "Mouse0/1/2…" name mouse buttons; a helper maps them back so the
+// aim bind can live on any button the player prefers.
+function mouseButtonFromCode(code) {
+  return /^Mouse\d+$/.test(String(code ?? '')) ? Number(String(code).slice(5)) : null;
+}
 function prettyKeyCode(code) {
+  const button = mouseButtonFromCode(code);
+  if (button !== null) return button === 0 ? 'LEFT MOUSE' : button === 1 ? 'MIDDLE MOUSE' : `MOUSE ${button}`;
   return String(code ?? '')
     .replace(/^Key/, '')
     .replace(/^Digit/, '')
@@ -2055,6 +2062,7 @@ function buildBindRows() {
     button.type = 'button';
     button.addEventListener('click', (event) => {
       event.stopPropagation();
+      if (bindMouseGuard) { bindMouseGuard = false; return; }
       menuCue('uin_main_nav');
       beginBindCapture(button, action);
     });
@@ -2064,32 +2072,62 @@ function buildBindRows() {
   }
   refreshBindButtons();
 }
+// Friendly name for hints: "Right mouse" reads better than "MOUSE 2".
+function mouseName(code) {
+  const button = mouseButtonFromCode(code);
+  if (button === null) return null;
+  return button === 0 ? 'Left mouse' : button === 1 ? 'Middle mouse' : button === 2 ? 'Right mouse' : `Mouse ${button}`;
+}
 let bindCapture = { active: false, button: null, action: null };
 function beginBindCapture(button, action) {
   if (bindCapture.active && bindCapture.button) bindCapture.button.classList.remove('listening');
   bindCapture = { active: true, button, action };
   button.classList.add('listening');
-  button.textContent = 'PRESS A KEY';
+  button.textContent = 'PRESS A KEY OR MOUSE BUTTON';
+}
+// Commit a captured code (or null to cancel), swapping with any action that
+// already used it so nothing becomes unreachable.
+function finishBindCapture(code) {
+  const { button, action } = bindCapture;
+  bindCapture = { active: false, button: null, action: null };
+  button.classList.remove('listening');
+  if (code === null) { button.textContent = prettyKeyCode(controls.binds[action.id]); return; }
+  for (const other of BINDABLE_ACTIONS) {
+    if (other.id !== action.id && controls.binds[other.id] === code) {
+      controls.binds[other.id] = controls.binds[action.id];
+    }
+  }
+  controls.binds[action.id] = code;
+  saveControls();
+  refreshBindButtons();
+  updateControlHints();
 }
 window.addEventListener('keydown', (event) => {
   if (!bindCapture.active) return;
   event.preventDefault();
   event.stopImmediatePropagation();
-  const { button, action } = bindCapture;
-  bindCapture = { active: false, button: null, action: null };
-  button.classList.remove('listening');
-  if (event.code === 'Escape') { button.textContent = prettyKeyCode(controls.binds[action.id]); return; }
-  // A key already in use swaps assignments, so nothing becomes unreachable.
-  for (const other of BINDABLE_ACTIONS) {
-    if (other.id !== action.id && controls.binds[other.id] === event.code) {
-      controls.binds[other.id] = controls.binds[action.id];
-    }
-  }
-  controls.binds[action.id] = event.code;
-  saveControls();
-  refreshBindButtons();
-  updateControlHints();
+  finishBindCapture(event.code === 'Escape' ? null : event.code);
 }, { capture: true });
+// Mouse buttons bind too: press any button while a row listens.
+window.addEventListener('mousedown', (event) => {
+  if (!bindCapture.active) return;
+  // A press on another shell button (Back, Reset, another row) cancels the
+  // capture instead of binding a mouse button, so menus stay usable.
+  if (event.target.closest('button') && !event.target.closest('.listening')) {
+    finishBindCapture(null);
+    return;
+  }
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  // The click that follows this press would restart the capture; the guard
+  // in the row's click handler swallows it.
+  bindMouseGuard = true;
+  finishBindCapture(`Mouse${event.button}`);
+}, { capture: true });
+// A stale guard would swallow the first later click on a bind row; every new
+// press is a fresh gesture, so the guard only survives its own click.
+document.addEventListener('pointerdown', () => { bindMouseGuard = false; }, true);
+let bindMouseGuard = false;
 function wireSettingsInputs() {
   const mouse = document.getElementById('set-mouse-sens');
   const ads = document.getElementById('set-ads-sens');
@@ -2240,7 +2278,7 @@ function updateControlHints() {
     'Pause for classes and sensitivity · Scores at top right',
   ] : [
     `${key('forward','W')}${key('back','S')}${key('left','A')}${key('right','D')} move · ${key('sprint','SHIFT')} sprint · ${key('jump','SPACE')} jump · ${key('crouch','C')}/CTRL crouch`,
-    `Left mouse fire · Right mouse aim · ${key('reload','R')} reload · ${key('respawn','B')} respawn`,
+    `Left mouse fire · ${mouseName(B.aim) ?? key('aim','RIGHT MOUSE')} aim · ${key('reload','R')} reload · ${key('respawn','B')} respawn`,
     `${key('switch1','1')}/${key('switch2','2')} or wheel switch guns · ${key('melee','E')} melee · ${key('frag','G')} frag (hold to cook) · ${key('smoke','Q')} smoke`,
     `${key('camo','K')} cycle camo · N navmesh · V collision · P path · ESC pause · Settings in pause`,
     ...(pad ? [gamepadControls.type === 'playstation'
@@ -3342,13 +3380,17 @@ document.addEventListener('mousemove', (event) => {
 
 document.addEventListener('mousedown', (event) => {
   if (!canControlPlayer() || event.sourceCapabilities?.firesTouchEvents || event.target.closest('#touch-controls')) return;
+  // Aim follows the bind: whichever mouse button the settings chose (right
+  // by default); a keyboard-bound aim uses no button at all.
+  const aimButton = mouseButtonFromCode(controls.binds.aim ?? 'Mouse2');
   if (event.button === 0) { mouseFire = true; weapon.setTrigger(true); }
-  if (event.button === 2) { mouseAim = true; viewmodel.setAiming(true); }
+  if (aimButton !== null && event.button === aimButton) { mouseAim = true; viewmodel.setAiming(true); }
 });
 document.addEventListener('mouseup', (event) => {
   if (event.sourceCapabilities?.firesTouchEvents) return;
+  const aimButton = mouseButtonFromCode(controls.binds.aim ?? 'Mouse2');
   if (event.button === 0) { mouseFire = false; weapon.setTrigger(false); }
-  if (event.button === 2) { mouseAim = false; viewmodel.setAiming(false); }
+  if (aimButton !== null && event.button === aimButton) { mouseAim = false; viewmodel.setAiming(false); }
 });
 document.addEventListener('contextmenu', (event) => {
   if (locked) event.preventDefault();
@@ -3729,9 +3771,9 @@ async function start(mode = gameMode) {
     ready = true;
     frontend.setReady([
       'WASD move · Shift sprint · Space jump · C/Ctrl crouch',
-      'Left mouse fire · Right mouse aim · R reload · B respawn',
+      `Left mouse fire · ${mouseName(controls.binds.aim) ?? prettyKeyCode(controls.binds.aim)} aim · R reload · B respawn`,
       'Wheel or 1/2 switch gun · E melee · G frag (hold to cook) · Q smoke',
-      'Snipers: right mouse scopes · Shift in the scope holds breath',
+      `Snipers: ${mouseName(controls.binds.aim) ?? prettyKeyCode(controls.binds.aim)} scopes · Shift in the scope holds breath`,
       'K cycle camo · N navmesh · V collision · P path · Esc pause · Settings in pause',
       navigation ? '' : 'Navigation failed to load; collision and walking are still available.',
     ]);
@@ -3782,7 +3824,9 @@ function tick() {
     jump: Boolean(keys[B.jump] || touch.jump || pad?.jump),
   };
   weapon.setTrigger(controlsActive && (mouseFire || touch.fire || Boolean(pad?.fire)));
-  viewmodel.setAiming(controlsActive && (mouseAim || touch.aim || Boolean(pad?.aim)));
+  // Keyboard-bound aim reads the held-key map, so a key like Z can scope in
+  // the way Mouse2 does by default.
+  viewmodel.setAiming(controlsActive && (mouseAim || Boolean(keys[controls.binds.aim]) || touch.aim || Boolean(pad?.aim)));
   const moving = controlsActive && Math.hypot(movement.forward, movement.strafe) > 0;
   sprintState = gunplay.sprint.update(simulationActive ? dt : 0, {
     wantsSprint: movement.sprint && moving,
