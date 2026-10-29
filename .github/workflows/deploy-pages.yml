@@ -1,0 +1,63 @@
+# Deploys the prebuilt static site in export/web to GitHub Pages.
+#
+# The publish directory doubles as the bake workspace, so the same prune
+# script the Netlify deploy uses strips the build inputs (source .gltf/.bin
+# and source PNGs) that the browser never fetches. That takes the site
+# from ~559 MB to ~247 MB.
+#
+# The title-screen play counter calls /api/plays, which only exists on the
+# Netlify deployment. play-counter.js swallows the failure by design, so the
+# game runs unaffected -- the counter line is simply blank on Pages.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ['main']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Strips bake inputs from export/web so only runtime assets ship
+      # (~559 MB -> ~247 MB). Fails loudly if a required asset is missing.
+      - name: Prune build inputs from publish dir
+        run: bash .tools/prune-deploy.sh
+
+      # Pages serves the artifact verbatim, but this guards against any
+      # file the underscore prefix would hide if Jekyll ever got involved.
+      - name: Disable Jekyll
+        run: touch export/web/.nojekyll
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'export/web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
