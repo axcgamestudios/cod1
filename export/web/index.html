@@ -6,23 +6,23 @@
 <link rel="stylesheet" href="touch-controls.css">
 <link rel="icon" href="social/icon-512.png" type="image/png">
 <link rel="apple-touch-icon" href="social/icon-512.png">
-<title>Claude of Duty: Vibe Slops II</title>
+<title>Call of Gruty: WarZone</title>
 <meta name="description" content="A browser-based first-person shooter running on a Black Ops II map export. No install — click to play.">
 <!-- Social cards. og:image must be absolute: several scrapers still refuse to
      resolve a relative one, and a card with no image renders as a bare URL. -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Claude of Duty: Vibe Slops II">
-<meta property="og:url" content="https://vibeslops.luckeysystems.com/">
-<meta property="og:title" content="Claude of Duty: Vibe Slops II">
+<meta property="og:site_name" content="Call of Gruty: WarZone">
+<meta property="og:url" content="https://axcgamestudios.github.io/cod1/">
+<meta property="og:title" content="Call of Gruty: WarZone">
 <meta property="og:description" content="A browser-based first-person shooter running on a Black Ops II map export. No install — click to play.">
-<meta property="og:image" content="https://vibeslops.luckeysystems.com/social/og-cover.png">
+<meta property="og:image" content="https://axcgamestudios.github.io/cod1/social/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Claude of Duty: Vibe Slops II cover art — a hooded figure holding a pistol, lit by a single shaft of light.">
+<meta property="og:image:alt" content="Call of Gruty: WarZone cover art — a hooded figure holding a pistol, lit by a single shaft of light.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Claude of Duty: Vibe Slops II">
+<meta name="twitter:title" content="Call of Gruty: WarZone">
 <meta name="twitter:description" content="A browser-based first-person shooter running on a Black Ops II map export. No install — click to play.">
-<meta name="twitter:image" content="https://vibeslops.luckeysystems.com/social/og-cover.png">
+<meta name="twitter:image" content="https://axcgamestudios.github.io/cod1/social/og-cover.png">
 <style>
   :root {
     color-scheme: dark;
@@ -388,6 +388,7 @@
   .fe-settings-body { max-height: min(56vh, 520px); overflow-y: auto; overscroll-behavior: contain;
     scrollbar-width: thin; scrollbar-color: #7fffc480 #07121ab8; padding: 0 6px; }
   .fe-settings-group { margin: 0 0 14px; background: #07121ab8; border-left: 2px solid #7fffc466; padding: 12px 14px; }
+  .fe-setting-note { margin: 8px 0 0; font-size: 11px; line-height: 1.5; color: rgba(220, 235, 245, .55); }
   .fe-settings-group > h3 { margin: 0 0 10px; font-size: 13px; letter-spacing: .18em; text-transform: uppercase;
     color: var(--fe-accent); font-weight: 700; }
   .fe-setting-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 0; }
@@ -641,7 +642,7 @@
   <div class="fe-layer fe-vignette"></div>
   <div class="fe-content">
     <header>
-      <h1 class="fe-wordmark">CLAUDE OF DUTY<span class="fe-subtitle">VIBE SLOPS <b>II</b></span></h1>
+      <h1 class="fe-wordmark">CALL OF GRUTY<span class="fe-subtitle">WAR<b>ZONE</b></span></h1>
       <p class="fe-sub">Browser reconstruction</p>
     </header>
     <div class="fe-welcome">
@@ -697,6 +698,13 @@
           <div class="fe-setting-row"><label for="set-invert-y">Invert vertical look</label><input id="set-invert-y" type="checkbox"></div>
           <div class="fe-setting-row"><label for="set-fov">Field of view</label><input id="set-fov" type="range" min="60" max="110" step="1"><output id="set-fov-value" for="set-fov"></output></div>
           <div class="fe-setting-row"><label for="set-touch-sens">Touch sensitivity</label><input id="set-touch-sens" type="range" min="0.4" max="2" step="0.1"><output id="set-touch-sens-value" for="set-touch-sens"></output></div>
+        </div>
+        <div class="fe-settings-group">
+          <h3>Controller</h3>
+          <div class="fe-setting-row"><label for="set-pad-sens">Controller look sensitivity</label><input id="set-pad-sens" type="range" min="0.2" max="3" step="0.1"><output id="set-pad-sens-value" for="set-pad-sens"></output></div>
+          <div class="fe-setting-row"><label for="set-aim-assist">Aim assist (controller)</label><input id="set-aim-assist" type="checkbox"></div>
+          <div class="fe-setting-row"><label for="set-vibration">Controller vibration</label><input id="set-vibration" type="checkbox"></div>
+          <p class="fe-setting-note">Xbox and PlayStation pads use the standard layout: sticks move and look, triggers fire and aim, and the pad navigates these menus.</p>
         </div>
         <div class="fe-settings-group">
           <h3>Controls</h3>
@@ -822,7 +830,12 @@ globalThis.hijackedStartup = new Promise((resolve) => {
     resolve();
   }
   if (new URLSearchParams(location.search).has('autostart')) requestLoad();
-  else for (const type of events) addEventListener(type, requestLoad, { capture: true, passive: true });
+  else {
+    for (const type of events) addEventListener(type, requestLoad, { capture: true, passive: true });
+    // Gamepad buttons and sticks never synthesize DOM events, so the pad
+    // wakes the game through this hook instead.
+    globalThis.__gamepadWakeup = requestLoad;
+  }
 });
 </script>
 <script type="module">
@@ -844,6 +857,7 @@ import { MedalTracker } from './medals.js';
 import { Hud, calibrationFromCorners } from './hud.js';
 import { Frontend, BINDABLE_ACTIONS } from './frontend.js';
 import { TouchControls } from './touch-controls.js';
+import { GamepadControls } from './gamepad-controls.js';
 import { loadGltf as loadGltfAsset } from './load-gltf.js';
 import { GraphicsSettings, filterTextures } from './graphics-settings.js';
 import { GraphicsRenderer } from './graphics-renderer.js';
@@ -885,7 +899,7 @@ if (inviteRoom) gameMode = 'multi';
 
 // ---------- control settings (mouse aim, FOV, keybinds) ----------
 const CONTROLS_KEY = 'vibeslops:controls';
-const CONTROL_DEFAULTS = Object.freeze({ mouseSensitivity: 1, adsSensitivity: 0.8, invertY: false, fov: 75 });
+const CONTROL_DEFAULTS = Object.freeze({ mouseSensitivity: 1, adsSensitivity: 0.8, invertY: false, fov: 75, gamepadSensitivity: 1, aimAssist: true, vibration: true });
 function loadControls() {
   let saved = null;
   try { saved = JSON.parse(mapStorage?.getItem(CONTROLS_KEY) ?? 'null'); } catch { /* a corrupt row falls back to defaults */ }
@@ -907,6 +921,9 @@ function loadControls() {
   merged.adsSensitivity = THREE.MathUtils.clamp(Number(merged.adsSensitivity) || 0.8, 0.2, 1.5);
   merged.fov = THREE.MathUtils.clamp(Math.round(Number(merged.fov) || 75), 60, 110);
   merged.invertY = Boolean(merged.invertY);
+  merged.gamepadSensitivity = THREE.MathUtils.clamp(Number(merged.gamepadSensitivity) || 1, 0.2, 3);
+  merged.aimAssist = merged.aimAssist !== false;
+  merged.vibration = merged.vibration !== false;
   return merged;
 }
 const controls = loadControls();
@@ -1523,6 +1540,7 @@ let hudElapsed = 1;
 let lastAdsState = false;
 let deathSource = null;
 let scoreboardHeld = false;
+let padScoreboard = false;
 let matchEndedHandled = false;
 let medals = null;
 const medalPopups = [];
@@ -1555,6 +1573,119 @@ const touchControls = new TouchControls({
     updateControlHints();
   },
 });
+
+// ---------- gamepad (Xbox / PlayStation) ----------
+// The pad mirrors the touch path: continuous state merged into movement in
+// tick(), edge actions through the same handlers, and look through
+// applyLook with radians already scaled by stick deflection.
+const gamepadControls = new GamepadControls({
+  onLook: (x, y) => {
+    if (!canControlPlayer()) return;
+    applyLook(x, y, 1);
+  },
+  onAction: (action, phase) => {
+    if (action === 'crouch') { gamepadControls.toggleCrouch(); return; }
+    if (action === 'frag' && phase === 'cancel') { cancelHeldGrenade(); return; }
+    if (action === 'menu-confirm') { gamepadMenuConfirm(); return; }
+    if (action === 'menu-back') { gamepadMenuBack(); return; }
+    if (!canControlPlayer()) return;
+    if (action === 'reload') reloadWeapon();
+    if (action === 'switch') switchHeldWeaponGuard(phase);
+    if (action === 'melee') meleeAttack();
+    if (action === 'smoke') beginGrenade('tactical');
+    if (action === 'camo') { viewmodel.cycleCamo(); setCamoEverywhere(viewmodel.camo); }
+    if (action === 'frag' && phase === 'start') beginGrenade('lethal');
+    if (action === 'frag' && phase === 'release') endGrenade('lethal');
+  },
+  // Menu / Options: pause during play, confirm in the shell, restart at the
+  // end-of-match screen.
+  onMenuButton: () => {
+    if (match.phase === 'ended') {
+      if (gameMode === 'single' || lobby.session?.isHost) { restartMatch(); requestPlay(); }
+      return;
+    }
+    if (frontend.visible) gamepadMenuConfirm();
+    else suspendPlay();
+  },
+  onMenuMove: (dx, dy) => moveMenuFocus(dx, dy),
+  onConnect: () => {
+    globalThis.__gamepadWakeup?.();
+    updateControlHints();
+  },
+  getAimTargets: () => {
+    // Chest height above the feet; the assist aims for the body, not boots.
+    const chest = new THREE.Vector3(0, 42, 0);
+    const out = [];
+    for (const enemy of enemies?.enemies ?? []) {
+      if (!enemy.dead) out.push(enemy.root.position.clone().add(chest));
+    }
+    for (const puppet of remotePlayers.values()) {
+      if (puppet.root && !puppet.dead) out.push(puppet.root.position.clone().add(chest));
+    }
+    return out;
+  },
+  getSettings: () => ({ ...controls, aiming: viewmodel.aimBlend > 0.5, camera }),
+});
+
+// D-pad / stick focus movement across whatever screen the shell is showing.
+function menuFocusables() {
+  return [...document.querySelectorAll('#blocker button')]
+    .filter((el) => !el.disabled && el.offsetParent !== null && !el.hidden);
+}
+function moveMenuFocus(dx, dy) {
+  const focusables = menuFocusables();
+  if (!focusables.length) return;
+  const current = document.activeElement?.matches?.('#blocker button') ? document.activeElement : null;
+  if (!current) { focusables[0].focus(); return; }
+  if (!dx && !dy) { current.focus(); return; }
+  const origin = current.getBoundingClientRect();
+  const ox = origin.left + origin.width / 2;
+  const oy = origin.top + origin.height / 2;
+  let best = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (const el of focusables) {
+    if (el === current) continue;
+    const rect = el.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const px = cx - ox;
+    const py = cy - oy;
+    // The candidate must sit in the pushed half-plane.
+    const along = px * dx + py * dy;
+    if (along <= 8) continue;
+    const across = Math.abs(px * dy - py * dx);
+    const score = across + along * 0.25;
+    if (score < bestScore) { bestScore = score; best = el; }
+  }
+  best?.focus();
+}
+// A activates the focused button, or the screen's primary one when nothing
+// has focus yet.
+function gamepadMenuConfirm() {
+  const focused = document.activeElement;
+  if (focused?.matches?.('#blocker button:not([disabled])')) { focused.click(); return; }
+  const screen = frontend.screen;
+  // On the title and pause screens the primary action is deploy/resume,
+  // not whichever map card happens to be first in tab order.
+  if (screen === 'title' || screen === 'pause') { frontend.play(); return; }
+  if (screen === 'mode') { frontend.chooseMode('single'); return; }
+  const focusables = menuFocusables();
+  if (focusables.length) { focusables[0].focus(); focusables[0].click(); }
+}
+function gamepadMenuBack() {
+  if (bindCapture.active) return; // the capture window keeps its key
+  const screen = frontend.screen;
+  if (screen === 'class') frontend.closeClass();
+  else if (screen === 'lobby') frontend.closeLobby();
+  else if (screen === 'settings') frontend.closeSettings();
+  else if (screen === 'pause' || screen === 'title') suspendPlay();
+}
+// The pad switches guns through one guarded entry so Y (no phase) and the
+// D-pad (with a direction) can share it.
+function switchHeldWeaponGuard(phase) {
+  switchHeldWeapon(Number(phase) || 1);
+}
+
 const graphicsSelect = document.getElementById('touch-graphics');
 function renderGraphicsSettings() {
   graphicsSelect.value = graphics.preset;
@@ -1893,6 +2024,9 @@ function refreshSettingsUi() {
   const fov = document.getElementById('set-fov');
   const invert = document.getElementById('set-invert-y');
   const touch = document.getElementById('set-touch-sens');
+  const pad = document.getElementById('set-pad-sens');
+  const assist = document.getElementById('set-aim-assist');
+  const rumble = document.getElementById('set-vibration');
   if (mouse) { mouse.value = String(controls.mouseSensitivity); document.getElementById('set-mouse-sens-value').textContent = `${controls.mouseSensitivity.toFixed(1)}×`; }
   if (ads) { ads.value = String(controls.adsSensitivity); document.getElementById('set-ads-sens-value').textContent = `${Math.round(controls.adsSensitivity * 100)}%`; }
   if (fov) { fov.value = String(controls.fov); document.getElementById('set-fov-value').textContent = `${controls.fov}°`; }
@@ -1901,6 +2035,12 @@ function refreshSettingsUi() {
     touch.value = String(touchControls.sensitivity);
     document.getElementById('set-touch-sens-value').textContent = `${touchControls.sensitivity.toFixed(1)}×`;
   }
+  if (pad) {
+    pad.value = String(controls.gamepadSensitivity);
+    document.getElementById('set-pad-sens-value').textContent = `${Number(controls.gamepadSensitivity).toFixed(1)}×`;
+  }
+  if (assist) assist.checked = controls.aimAssist !== false;
+  if (rumble) rumble.checked = controls.vibration !== false;
   refreshBindButtons();
 }
 function buildBindRows() {
@@ -1956,6 +2096,9 @@ function wireSettingsInputs() {
   const fov = document.getElementById('set-fov');
   const invert = document.getElementById('set-invert-y');
   const touch = document.getElementById('set-touch-sens');
+  const pad = document.getElementById('set-pad-sens');
+  const assist = document.getElementById('set-aim-assist');
+  const rumble = document.getElementById('set-vibration');
   mouse?.addEventListener('input', () => {
     controls.mouseSensitivity = Number(mouse.value);
     document.getElementById('set-mouse-sens-value').textContent = `${controls.mouseSensitivity.toFixed(1)}×`;
@@ -1981,6 +2124,17 @@ function wireSettingsInputs() {
       legacy.value = String(touchControls.sensitivity);
       document.getElementById('touch-sensitivity-value').textContent = `${touchControls.sensitivity.toFixed(1)}×`;
     }
+  });
+  pad?.addEventListener('input', () => {
+    controls.gamepadSensitivity = Number(pad.value);
+    document.getElementById('set-pad-sens-value').textContent = `${controls.gamepadSensitivity.toFixed(1)}×`;
+    saveControls();
+  });
+  assist?.addEventListener('change', () => { controls.aimAssist = assist.checked; saveControls(); });
+  rumble?.addEventListener('change', () => {
+    controls.vibration = rumble.checked;
+    saveControls();
+    if (controls.vibration) gamepadControls.rumble({ strong: 0.4, weak: 0.6, duration: 0.18 });
   });
   document.getElementById('fe-settings')?.addEventListener('click', (event) => event.stopPropagation());
   buildBindRows();
@@ -2059,7 +2213,7 @@ function requestPlay() {
   if (audio?.state === 'suspended') void audio.resume().catch(() => {});
   // Menu buttons must not retain keyboard focus over gameplay.
   document.activeElement?.blur();
-  if (touchControls.mode) {
+  if (touchControls.mode || gamepadControls.playing) {
     setAutomationActive(true);
     playCounter.record().then(renderPlayCount);
   } else {
@@ -2078,6 +2232,7 @@ function updateControlHints() {
   if (!ready) return;
   const B = controls.binds;
   const key = (id, fallback) => prettyKeyCode(B[id] ?? fallback);
+  const pad = gamepadControls.connected;
   frontend.controls = touchControls.mode ? [
     'Left thumb move · Right thumb swipe to look',
     'Hold FIRE and drag to aim · JUMP · RELOAD',
@@ -2088,11 +2243,15 @@ function updateControlHints() {
     `Left mouse fire · Right mouse aim · ${key('reload','R')} reload · ${key('respawn','B')} respawn`,
     `${key('switch1','1')}/${key('switch2','2')} or wheel switch guns · ${key('melee','E')} melee · ${key('frag','G')} frag (hold to cook) · ${key('smoke','Q')} smoke`,
     `${key('camo','K')} cycle camo · N navmesh · V collision · P path · ESC pause · Settings in pause`,
+    ...(pad ? [gamepadControls.type === 'playstation'
+      ? 'Controller: left stick move · right stick look · R2 fire · L2 aim · X reload · CROSS jump · CIRCLE crouch · TRIANGLE switch · R3 melee · R1 frag (hold to cook) · L1 smoke · L3 sprint · OPTIONS pause'
+      : 'Controller: left stick move · right stick look · RT fire · LT aim · X reload · A jump · B crouch · Y switch · RS click melee · RB frag (hold to cook) · LB smoke · LS click sprint · MENU pause'] : []),
   ];
   frontend.render();
   const prompt = document.querySelector('.fe-prompt');
   if (!prompt) return;
   if (touchControls.mode) prompt.textContent = 'Tap to deploy';
+  else if (gamepadControls.playing) prompt.textContent = 'Press A / CROSS to deploy';
   else if (frontend.mode === 'multi') prompt.textContent = 'Click to open a multiplayer room';
   else prompt.textContent = 'Click to play';
 }
@@ -2564,6 +2723,8 @@ function fireShot({ triggerShotCount = 0 } = {}) {
   const intro = activeWeaponSlot.definition.initialShotCount > 0 && triggerShotCount === 1;
   if (!viewmodel.fire({ intro })) return;
   if (playerHealth?.protectionTimer > 0) playerHealth.protectionTimer = 0;
+  // Trigger rumble rides the shot so the pad feels the report, not the frame.
+  gamepadControls.rumble({ strong: 0.12, weak: 0.3, duration: 0.045 });
   // The round leaves inside the current hip or ADS cone and blooms the cone
   // for the next one; damage falls off with the distance it travelled and the
   // region it struck, both per the weapon file.
@@ -3200,7 +3361,7 @@ document.addEventListener('keydown', (event) => {
     event.preventDefault();
   }
   if (event.repeat || !ready) return;
-  if (event.code === 'Escape' && locked && touchControls.mode) {
+  if (event.code === 'Escape' && locked && (touchControls.mode || gamepadControls.playing)) {
     suspendPlay();
     return;
   }
@@ -3404,9 +3565,12 @@ async function start(mode = gameMode) {
       onDamage: ({ amount, source }) => {
         const flinch = gunplay.kick.flinch(amount, { side: -shooterSide(source) });
         nudgeView(flinch.pitch, flinch.yaw);
+        gamepadControls.rumble({ strong: Math.min(0.7, amount / 40), weak: 0.3, duration: 0.12 });
       },
       onDeath: ({ source }) => {
         clearKeys();
+        gamepadControls.clearCrouch();
+        gamepadControls.rumble({ strong: 1, weak: 0.5, duration: 0.45 });
         deathSource = source;
         if (netActive()) {
           // The victim owns the kill record in multiplayer: one broadcast,
@@ -3595,18 +3759,30 @@ function tick() {
   const simulationActive = locked && !frontend.visible && !automationPaused &&
     !(touchControls.mode && scoreboardHeld) && match.phase === 'playing';
   const controlsActive = canControlPlayer();
-  touchControls.setEnabled(controlsActive, ready && locked && !frontend.visible && !scoreboardHeld && match.phase === 'playing');
+  touchControls.setEnabled(controlsActive && !gamepadControls.playing, ready && locked && !frontend.visible && !scoreboardHeld && match.phase === 'playing' && !gamepadControls.playing);
+  // The pad is read every frame whether or not it is in use, so menus stay
+  // navigable and a pad unplugged mid-fire releases the trigger.
+  const pad = gamepadControls.poll(dt, {
+    menu: frontend.visible && ready,
+    playing: controlsActive,
+  });
+  if (playerHealth?.dead) gamepadControls.clearCrouch();
+  // VIEW holds the scoreboard like Tab does on the keyboard.
+  if (pad) {
+    if (pad.scores && !padScoreboard) { padScoreboard = true; scoreboardHeld = true; renderMatchUi(); }
+    else if (!pad.scores && padScoreboard) { padScoreboard = false; scoreboardHeld = false; renderMatchUi(); }
+  } else if (padScoreboard) { padScoreboard = false; if (scoreboardHeld) { scoreboardHeld = false; renderMatchUi(); } }
   const touch = touchControls.input.read();
   const B = controls.binds;
   const movement = {
-    forward: Number(Boolean(keys[B.forward])) - Number(Boolean(keys[B.back])) + touch.forward,
-    strafe: Number(Boolean(keys[B.right])) - Number(Boolean(keys[B.left])) + touch.strafe,
-    sprint: Boolean(keys[B.sprint] || touch.sprint),
-    crouch: Boolean(keys[B.crouch] || keys.ControlLeft || keys.ControlRight || touch.crouch),
-    jump: Boolean(keys[B.jump] || touch.jump),
+    forward: THREE.MathUtils.clamp(Number(Boolean(keys[B.forward])) - Number(Boolean(keys[B.back])) + touch.forward + (pad?.forward ?? 0), -1, 1),
+    strafe: THREE.MathUtils.clamp(Number(Boolean(keys[B.right])) - Number(Boolean(keys[B.left])) + touch.strafe + (pad?.strafe ?? 0), -1, 1),
+    sprint: Boolean(keys[B.sprint] || touch.sprint || pad?.sprint),
+    crouch: Boolean(keys[B.crouch] || keys.ControlLeft || keys.ControlRight || touch.crouch || pad?.crouch),
+    jump: Boolean(keys[B.jump] || touch.jump || pad?.jump),
   };
-  weapon.setTrigger(controlsActive && (mouseFire || touch.fire));
-  viewmodel.setAiming(controlsActive && (mouseAim || touch.aim));
+  weapon.setTrigger(controlsActive && (mouseFire || touch.fire || Boolean(pad?.fire)));
+  viewmodel.setAiming(controlsActive && (mouseAim || touch.aim || Boolean(pad?.aim)));
   const moving = controlsActive && Math.hypot(movement.forward, movement.strafe) > 0;
   sprintState = gunplay.sprint.update(simulationActive ? dt : 0, {
     wantsSprint: movement.sprint && moving,
